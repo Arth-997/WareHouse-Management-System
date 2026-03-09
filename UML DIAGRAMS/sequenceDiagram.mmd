@@ -1,0 +1,37 @@
+sequenceDiagram
+    autonumber
+    actor Client
+    participant WOCS as WOCS Order System
+    actor Operator as Warehouse Operator (Handheld)
+    participant Billing as Phase 1 Billing Module
+
+    Client->>WOCS: Submit Order (API/File/Manual)
+    WOCS->>WOCS: Record Order & Apply Configured SLA Start
+    WOCS-->>Client: Acknowledge (State: Received)
+    WOCS->>WOCS: Check Inventory & Allocate Stock
+    WOCS->>Operator: Display Order on Handheld
+    
+    Operator->>WOCS: Scan Barcode & Pick Item
+    WOCS->>WOCS: Update State (Picked) & Log Timestamp
+    
+    Operator->>WOCS: Pack Item
+    WOCS->>WOCS: Update State (Packed) & Log Timestamp
+    
+    opt SLA Warning
+        WOCS->>WOCS: Check if Current Time > (SLA Deadline - 2 hours)
+        WOCS-->>Operator: Display SLA Warning Alert
+    end
+    
+    Operator->>WOCS: Dispatch Order
+    WOCS->>WOCS: Update State (Dispatched) & Log Timestamp
+    
+    %% SLA Check
+    alt Dispatch Time <= SLA Duration
+        WOCS->>WOCS: Mark SLA Met
+    else Dispatch Time > SLA Duration
+        WOCS->>WOCS: Mark SLA Breached & Log for Reporting
+    end
+
+    %% Billing Trigger
+    WOCS->>Billing: Log 'Picking' & 'Handling' Activity
+    Billing->>Billing: Calculate Charge (Predefined Rate * Qty)

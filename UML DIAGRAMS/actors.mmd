@@ -1,0 +1,31 @@
+flowchart LR
+    %% Actors
+    subgraph Roles [User Roles & Governance]
+        WO([Warehouse Operator])
+        WM([Warehouse Manager])
+        ROH([Regional Ops Head])
+        FIN([Finance])
+        ITA([IT Administrator])
+        CU([Client User])
+    end
+
+    %% System Boundaries and Use Cases
+    subgraph WOCS [WOCS - Phase 1 Core]
+        UC_Inv[Manage Inventory: Receive, Adjust, Transfer]
+        UC_Ord[Process Orders: Pick, Pack, Dispatch]
+        UC_SLA[Configure SLAs & Monitor Breaches]
+        UC_Bill[Configure Rates & Generate Billing Data]
+        UC_Conf[Configure Warehouse Rules & Role Access]
+        UC_View[View Own Data: Inventory Snapshot & Order Status]
+    end
+
+    %% Relationships
+    WO --> UC_Inv
+    WO --> UC_Ord
+    WM --> UC_Inv
+    WM --> UC_Ord
+    ROH --> UC_SLA
+    FIN --> UC_Bill
+    ITA --> UC_Conf
+    ITA --> UC_SLA
+    CU --> UC_View

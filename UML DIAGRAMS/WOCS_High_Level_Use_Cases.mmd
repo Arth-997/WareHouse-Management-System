@@ -1,0 +1,38 @@
+---
+title: WOCS - High Level Use Case Diagram
+---
+flowchart LR
+    %% Actors
+    subgraph Roles["System Users (Role-Based Access)"]
+        WO([Warehouse Operator])
+        WM([Warehouse Manager])
+        ROH([Regional Ops Head])
+        FIN([Finance])
+        ITA([IT Admin])
+        CU([Client User])
+        SC([Sales / Client Servicing])
+    end
+
+    %% Use Cases
+    subgraph WOCS_UC["Phase 1 Fixed Scope Requirements"]
+        UC_Inv["Receive, Adjust, Transfer Inventory"]
+        UC_Ord["Process Orders (Pick, Pack, Dispatch)"]
+        UC_SLA["Configure & Monitor SLAs"]
+        UC_Bill["Configure Billing Rates & Exports"]
+        UC_Rule["Configure Warehouse Location Rules"]
+        UC_View["View Client Data (Inventory/Order)"]
+        UC_Notif["Configure Alerts (Low Stock, Breaches)"]
+    end
+
+    %% Mappings
+    WO --> UC_Inv
+    WO --> UC_Ord
+    WM --> UC_Inv
+    WM --> UC_Ord
+    ROH --> UC_SLA
+    FIN --> UC_Bill
+    ITA --> UC_Rule
+    ITA --> UC_SLA
+    ITA --> UC_Notif
+    CU --> UC_View
+    SC --> UC_View

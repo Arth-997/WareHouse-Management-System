@@ -1,0 +1,23 @@
+---
+title: Sequence Diagram - Inventory Adjustment (Low Level Design)
+---
+sequenceDiagram
+    autonumber
+    actor WM as Warehouse Manager
+    participant API as WOCS API
+    participant IM as Inventory Service
+    participant DB as WOCS Database
+
+    WM->>API: Submit Inventory Adjustment (SKU, Qty, Reason)
+    API->>IM: Process Adjustment Request
+    IM->>DB: Fetch Current Quantity & Location Config
+    DB-->>IM: Current Qty = 100, Mandatory Location = True
+
+    IM->>IM: Calculate Difference
+    IM->>DB: Update Qty in Location (New Qty)
+    
+    IM->>DB: Insert Audit Log (Prev: 100, New: Adjusted, Reason, UserID, Timestamp)
+    DB-->>IM: Commit Success
+
+    IM-->>API: Return Validation Success
+    API-->>WM: Adjust Successful Alert

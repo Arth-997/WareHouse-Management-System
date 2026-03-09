@@ -1,0 +1,425 @@
+1. Introduction
+1.1 Purpose
+
+This document defines the requirements for Phase 1 Core of the Warehouse Operations & Coordination System (WOCS).
+
+The purpose of this system is to:
+
+Establish a single source of truth for inventory and orders
+
+Improve SLA tracking and operational accountability
+
+Enable structured billing data generation
+
+Reduce client escalations
+
+Improve month-end reconciliation efficiency
+
+This version represents a fixed Phase 1 scope suitable for pilot implementation.
+
+1.2 Scope
+Included in Phase 1
+
+Centralized inventory management across warehouses
+
+Order lifecycle tracking
+
+SLA configuration and monitoring
+
+Configurable billing rate definitions (bounded scope)
+
+Automated charge calculation for predefined activity types
+
+Structured billing data export
+
+Audit trails
+
+Configurable warehouse enforcement rules
+
+Controlled client visibility
+
+Data migration tools
+
+Role-based access control
+
+Notification system (bounded and configurable)
+
+Explicitly Out of Scope (Phase 1)
+
+Complex conditional billing logic
+
+Tiered/volume-based discounting
+
+Advanced analytics dashboards
+
+Full offline operational mode
+
+Fleet tracking
+
+HR systems
+
+Replacement of accounting software
+
+2. Operational Context
+
+The organization operates:
+
+6 warehouses initially
+
+Expected growth to 8–9 warehouses within 2–3 years
+
+Warehouse types include:
+
+Storage-only
+
+Full fulfillment (pick-pack-ship)
+
+One temperature-sensitive facility
+
+Operational maturity varies by site.
+
+The system must allow configuration differences per warehouse without code changes.
+
+3. Pilot Rollout Strategy (Governance Requirement)
+
+Phase 1 production rollout shall begin with:
+
+A controlled pilot deployment in one selected warehouse prior to multi-site deployment.
+
+Pilot Requirements:
+
+Pilot duration: Minimum 6–8 weeks live operation
+
+At least one full billing cycle must be validated
+
+Inventory reconciliation must be validated before scale rollout
+
+SLA reports must match operational records
+
+Billing output must reconcile with finance records
+
+Multi-site rollout shall proceed only after pilot validation criteria are met.
+
+4. Functional Requirements
+4.1 User Roles & Governance
+Supported Roles
+
+Warehouse Operator
+
+Warehouse Manager
+
+Regional Operations Head
+
+Finance
+
+Sales / Client Servicing
+
+Client User
+
+IT Administrator
+
+Access Control
+
+Role-based access must be enforced.
+
+Clients may access only their own data.
+
+Financial configuration is restricted to Finance role.
+
+Warehouse rules configuration restricted to IT Administrator.
+
+SLA configuration restricted to Operations Head or IT Administrator.
+
+All critical changes must be logged with timestamp and user identity.
+
+4.2 Inventory Management
+4.2.1 Inventory Receiving
+
+The system shall record:
+
+Client
+
+SKU
+
+Quantity
+
+Batch/Lot (if applicable)
+
+Expiry date (if applicable)
+
+Storage type (normal/cold)
+
+Date received
+
+Barcode-first workflows must be supported.
+
+4.2.2 Location Enforcement (Configurable)
+
+Per warehouse configuration must allow:
+
+Mandatory location (rack/bin) assignment (Enable/Disable)
+
+Mandatory serial capture per SKU or Client (Enable/Disable)
+
+These settings must be configurable without code changes.
+
+4.2.3 Inventory Adjustments
+
+All inventory changes must record:
+
+Previous value
+
+New value
+
+Standardized reason category
+
+Optional comment
+
+User identity
+
+Timestamp
+
+4.2.4 Transfers
+
+System must support inter-warehouse transfers.
+
+Complete audit trail required.
+
+4.3 Order Management
+4.3.1 Order Entry Methods
+
+Manual entry
+
+Structured file upload
+
+API integration
+
+4.3.2 Order Data Fields
+
+Each order must include:
+
+Client
+
+Order ID
+
+SKU + quantity
+
+Delivery address
+
+SLA/priority
+
+Shipping method
+
+Billing category
+
+4.3.3 Order Lifecycle
+
+Tracked states:
+
+Received
+
+Allocated
+
+Picked
+
+Packed
+
+Dispatched
+
+Delivered (optional confirmation)
+
+Partial fulfillment must be supported.
+
+All state changes must log:
+
+User
+
+Timestamp
+
+Previous state
+
+New state
+
+4.4 SLA Logic (Testable Definition)
+
+For each client:
+
+SLA duration (in hours) must be configurable.
+
+SLA start status must be configurable.
+
+SLA breach defined as:
+
+Dispatch Timestamp > SLA Start Timestamp + SLA Duration
+
+System must:
+
+Flag orders 2 hours before breach (configurable).
+
+Clearly mark breached orders.
+
+Include SLA compliance metrics in reporting.
+
+4.5 Billing – Phase 1 Bounded Scope
+Supported Pricing Model
+
+Phase 1 supports:
+
+Configurable rates per client
+
+Variation per warehouse
+
+Predefined activity types:
+
+Storage (per unit per day)
+
+Handling (per unit)
+
+Picking (per unit)
+
+Automation Scope
+
+Automated charge calculation for predefined activity types only.
+
+Rate effective dates must be supported.
+
+Historical rates locked once billing cycle closed.
+
+Not Supported in Phase 1
+
+Conditional formulas
+
+Volume-based discount tiers
+
+Custom billing scripts
+
+4.6 Reporting
+Operations
+
+Inventory levels
+
+Aging stock
+
+SLA adherence
+
+Order turnaround time
+
+Finance
+
+Storage charges
+
+Handling charges
+
+Monthly billing summaries
+
+Client
+
+Inventory snapshot
+
+Order status
+
+4.7 Notifications
+
+Configurable by IT Administrator:
+
+Low inventory alerts
+
+SLA breach warnings
+
+Expiry alerts
+
+Daily summaries
+
+Notification frequency must be configurable (Immediate / Daily).
+
+4.8 Data Migration
+
+System must support migration of:
+
+Inventory balances
+
+Open orders
+
+Client master data
+
+SKU master data
+
+Migration Acceptance Criteria
+
+Imported inventory must reconcile with validated physical counts.
+
+Validation report must compare source vs system values.
+
+Open orders must retain lifecycle stage.
+
+Test migration must be supported before go-live.
+
+5. Non-Functional Requirements
+5.1 Performance
+
+Support 150 concurrent users.
+
+Standard transactions must complete within 3 seconds under normal load.
+
+5.2 Connectivity
+
+System must prevent data loss during network interruption up to 5 minutes.
+
+Users must be able to resume interrupted transaction without full re-entry.
+
+Full offline mode not required in Phase 1.
+
+5.3 Usability
+
+Receiving workflow ≤ 5 interaction steps (excluding scanning).
+
+Barcode-based picking where applicable.
+
+Handheld device support required.
+
+5.4 Audit Retention
+
+Inventory and order audit logs retained minimum 3 years.
+
+Archival mechanism required beyond retention period.
+
+6. Scalability
+
+System must allow:
+
+Addition of new warehouses via configuration.
+
+Addition of new clients with independent SLA and pricing rules.
+
+No code change required for onboarding new warehouse or client.
+
+7. Constraints
+
+Phase 1 delivery target: 6–8 months.
+
+Moderate budget.
+
+Accounting system retained.
+
+Barcode hardware integration required.
+
+Internet reliability varies across warehouses.
+
+8. Assumptions
+
+Management enforces system usage.
+
+Barcode devices deployed.
+
+Warehouse processes progressively standardize.
+
+Pilot validation precedes scale rollout.
+
+Status
+
+This SRS defines:
+
+Phase 1 Core – Fixed Scope
+Pilot-first rollout strategy – Approved
+
+Further enhancements will be handled under Phase 2 planning.

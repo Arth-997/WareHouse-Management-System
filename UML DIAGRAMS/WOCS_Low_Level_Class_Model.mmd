@@ -1,0 +1,79 @@
+---
+title: WOCS Phase 1 - Core Class Model (Low Level Design)
+---
+classDiagram
+    class User {
+        +UUID userId
+        +String role
+        +String name
+        +login()
+        +hasPermission()
+    }
+    
+    class Warehouse {
+        +String warehouseId
+        +String type
+        +boolean mandatoryLocation
+        +boolean mandatorySerial
+    }
+    
+    class InventoryItem {
+        +UUID itemId
+        +UUID clientId
+        +String sku
+        +int quantity
+        +String batchLot
+        +Date expiryDate
+        +String storageType
+        +String location
+        +adjustQuantity(newVal, reason, user)
+        +transfer(warehouseId)
+    }
+    
+    class Order {
+        +UUID orderId
+        +UUID clientId
+        +String deliveryAddress
+        +String shippingMethod
+        +String status
+        +DateTime slaStartTime
+        +DateTime dispatchTime
+        +updateState(newState, user)
+    }
+    
+    class OrderLineItem {
+        +UUID lineItemId
+        +String sku
+        +int quantity
+    }
+    
+    class SLAConfig {
+        +UUID clientId
+        +int slaDurationHours
+        +String slaStartStatus
+        +checkBreach(currentTime, dispatchTime)
+    }
+    
+    class BillingRate {
+        +UUID clientId
+        +String warehouseId
+        +String activityType
+        +float rate
+        +Date effectiveDate
+        +calculateCharge(quantity)
+    }
+    
+    class AuditLog {
+        +UUID logId
+        +UUID userId
+        +DateTime timestamp
+        +String action
+        +String previousState
+        +String newState
+    }
+    
+    Order "1" *-- "*" OrderLineItem : contains
+    Order --> SLAConfig : governed by
+    InventoryItem --> AuditLog : logs to
+    Order --> AuditLog : logs to
+    Warehouse "1" --> "*" InventoryItem : stores

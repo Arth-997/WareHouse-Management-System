@@ -1,0 +1,44 @@
+---
+title: Sequence Diagram - Order Fulfillment, SLA Monitoring, and Billing (Low Level Design)
+---
+sequenceDiagram
+    autonumber
+    actor Client
+    participant API as WOCS API
+    participant OM as Order Service
+    participant SLA as SLA Engine
+    participant BM as Billing Service
+    participant DB as WOCS Database
+    actor Operator as Warehouse Handheld
+
+    Client->>API: Submit Order (API/File/Manual)
+    API->>OM: Create Order (Status: Received)
+    OM->>DB: Save Order & Create Creation Audit Log
+    OM->>SLA: Start SLA Timer (Configured for Client)
+    API-->>Client: Acknowledgment of Order Receipt
+
+    %% Order Fulfillment Workflow & Progress
+    Operator->>OM: Scan Barcode (Pick Items Workflow)
+    OM->>DB: Update Order State (Picked) & Generate Audit Log
+    OM->>BM: Trigger Picking Charge Calc (Rate * Qty)
+    
+    Operator->>OM: Pack Items Workflow
+    OM->>DB: Update Order State (Packed) & Generate Audit Log
+
+    %% Async SLA Monitoring Check
+    activate SLA
+    SLA->>SLA: Async Check: (CurrentTime > SLA_Start + Duration - 2h)
+    SLA-->>Operator: 2-hour SLA Warning Alert / Notification
+    deactivate SLA
+
+    Operator->>OM: Dispatch Order to Shipper
+    OM->>DB: Update State (Dispatched) & Generate Audit Log
+    
+    OM->>SLA: Stop SLA Timer & Evaluate Final SLA Goal
+    alt Dispatch Time <= SLA Duration Configured
+        SLA->>DB: Flag Order as SLA Compliant
+    else Dispatch Time > SLA Duration Configured
+        SLA->>DB: Flag Order as SLA Breached (For Reporting)
+    end
+
+    OM->>BM: Trigger Handling Charge Calculation (Fixed Rate)

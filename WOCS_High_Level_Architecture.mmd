@@ -1,0 +1,53 @@
+---
+title: WOCS - High Level Architecture Component Diagram (Phase 1)
+---
+flowchart TD
+    subgraph WOCS["Warehouse Operations & Coordination System (Phase 1)"]
+        direction TB
+        UI_Web["Web Interface (React/Vue)"]
+        UI_Handheld["Handheld Scanner App"]
+        API["WOCS API Gateway"]
+        
+        subgraph CoreServices["Core Microservices/Modules"]
+            IAM["Access Control & User Mgt"]
+            INV["Inventory Management core"]
+            ORD["Order Management Service"]
+            SLA["SLA Monitoring Engine"]
+            BILL["Billing Module (Phase 1 bounded)"]
+            NOTIF["Notification Engine"]
+            REP["Reporting & Analytics"]
+            AUDIT["Audit & Logging Service"]
+        end
+        
+        DB[(Central WOCS Database)]
+    end
+    
+    %% External Interfaces
+    System_Accounting["External Accounting System (Future Integration / Export)"]
+
+    %% User Interactions
+    Client("Client User") --> UI_Web
+    Operator("Warehouse Operator") --> UI_Handheld
+    Finance("Finance User") --> UI_Web
+    Admin("IT Administrator") --> UI_Web
+    Ops("Regional Ops Head") --> UI_Web
+
+    UI_Web --> API
+    UI_Handheld --> API
+    
+    API --> CoreServices
+    CoreServices --> DB
+    
+    %% Dependencies and logging
+    INV -.-> AUDIT
+    ORD -.-> AUDIT
+    BILL -.-> AUDIT
+    IAM -.-> AUDIT
+    
+    %% Cross Service Communication
+    ORD --> SLA
+    ORD --> BILL
+    INV --> BILL
+    SLA --> NOTIF
+    INV --> NOTIF
+    BILL -.-> System_Accounting
