@@ -4,20 +4,28 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
   id        String   @id @default(uuid())
-  role      String   // Operator, Manager, Regional_Ops, Finance, Client, Admin
+  role      String   // IT_ADMINISTRATOR, WAREHOUSE_OPERATOR, WAREHOUSE_MANAGER, FINANCE, CLIENT_USER
   name      String
   email     String   @unique
-  password  String
+  password  String?  // Made optional for Google Auth users
+  googleId  String?  @unique
+  avatarUrl String?
+
+  // Optional: links CLIENT_USER to their Client entity
+  clientId  String?
+  client    Client?  @relation(fields: [clientId], references: [id])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
   // Relations
-  inventoryMovements InventoryMovement[]
+  inventoryMovements    InventoryMovement[]
+  createdRequests       InventoryRequest[]  @relation("RequestCreator")
+  respondedRequests     InventoryRequest[]  @relation("RequestResponder")
 }
 
 model Warehouse {
@@ -44,6 +52,7 @@ model Warehouse {
   // Relations
   inventoryPositions               InventoryPosition[]
   orders                           Order[]
+  inventoryRequests                InventoryRequest[]
 }
 
 model Client {
@@ -61,6 +70,8 @@ model Client {
   skus             SKU[]
   inventory        InventoryPosition[]
   orders           Order[]
+  users            User[]
+  inventoryRequests InventoryRequest[]
 }
 
 model SKU {
@@ -80,7 +91,8 @@ model SKU {
   updatedAt      DateTime @updatedAt
   
   // Relations
-  inventory      InventoryPosition[]
+  inventory          InventoryPosition[]
+  inventoryRequests  InventoryRequest[]
 }
 
 model InventoryPosition {
@@ -144,4 +156,29 @@ model InventoryMovement {
   performedById    String
   performedBy      User     @relation(fields: [performedById], references: [id])
   performedAt      DateTime @default(now())
+}
+
+model InventoryRequest {
+  id              String   @id @default(uuid())
+  warehouseId     String
+  warehouse       Warehouse @relation(fields: [warehouseId], references: [id])
+  clientId        String
+  client          Client   @relation(fields: [clientId], references: [id])
+  skuId           String
+  sku             SKU      @relation(fields: [skuId], references: [id])
+
+  requestedQty    Int
+  status          String   @default("pending") // pending, approved, rejected, received
+  notes           String?
+
+  requestedById   String
+  requestedBy     User     @relation("RequestCreator", fields: [requestedById], references: [id])
+  
+  respondedById   String?
+  respondedBy     User?    @relation("RequestResponder", fields: [respondedById], references: [id])
+  respondedAt     DateTime?
+  receivedAt      DateTime?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }

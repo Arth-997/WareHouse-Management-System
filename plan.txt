@@ -1,0 +1,512 @@
+
+
+Here is the **extracted text from the document you uploaded**:  
+fileciteturn0file0
+
+---
+
+# WOCS — Technical Implementation Specification  
+**Warehouse Operations & Coordination System**  
+**Phase 1 Core — Technical Implementation Specification**
+
+For use by engineering teams and coding agents  
+**Version 1.0 | March 2026**
+
+---
+
+# 1. System Overview
+
+WOCS is a **multi-warehouse, multi-client operations management platform**. It replaces fragmented spreadsheets, email, and ad-hoc tools with a single centralized system covering inventory, order lifecycle, SLA tracking, billing data generation, and audit trails.
+
+---
+
+# 1.1 High-Level Architecture
+
+WOCS follows a **three-tier architecture**:
+
+1. **Frontend Layer**: Web application (React) + Mobile/Handheld PWA  
+2. **Backend Layer**: RESTful API server with business logic and rule engine  
+3. **Data Layer**: Relational database (PostgreSQL) + audit event store + file storage  
+
+### Key architectural principles
+
+1. **Configuration-over-code**  
+   All per-warehouse and per-client rules are stored in the database and evaluated at runtime — no code deployments for new warehouses or clients.
+
+2. **Immutable audit trail**  
+   Every state change is appended to an audit log. Records are never deleted, only archived.
+
+3. **Role enforcement at API layer**  
+   All permissions are validated server-side. The frontend UI may hide features, but the API enforces all role-based restrictions independently.
+
+4. **Offline resilience (bounded)**  
+   Transactions buffered locally for up to 5 minutes of network loss. Full offline mode is out of scope for Phase 1.
+
+---
+
+# 1.2 Technology Stack
+
+| Layer | Technology | Justification |
+|---|---|---|
+| Frontend (Web) | React 18 + TypeScript + Vite | Component reuse, strong typing, fast builds |
+| Frontend (Mobile/Handheld) | Progressive Web App (PWA) | No app store; works on handheld barcode scanners |
+| Backend API | Node.js + Express (or NestJS) | Fast JSON APIs; large ecosystem for logistics integrations |
+| Database | PostgreSQL 15+ | ACID compliance, JSONB for flexible config, row-level security |
+| ORM | Prisma or TypeORM | Schema migrations, type-safe queries |
+| Auth | JWT + Refresh Tokens | Stateless, scalable across warehouses |
+| File Storage | S3-compatible (AWS S3 or MinIO on-prem) | Bulk import files, export reports |
+| Background Jobs | BullMQ (Redis-backed) | SLA monitoring cron, notification dispatch, billing calc |
+| Notifications | Nodemailer (email) + Firebase (push) | Multi-channel; configurable per warehouse |
+| API Gateway | Nginx reverse proxy | Rate limiting, SSL termination, path routing |
+| Containerization | Docker + Docker Compose | Consistent deployments across 6–9 warehouses |
+| CI/CD | GitHub Actions | Automated testing + deployment pipeline |
+
+---
+
+# 1.3 Deployment Topology
+
+Single central server (cloud or on-prem data center) with:
+
+1. One PostgreSQL instance (primary + replica for read scaling)  
+2. Redis instance for job queues and session caching  
+3. All warehouses connect via internet (HTTPS).  
+4. Warehouse-local clients are thin web/PWA clients only.  
+5. Barcode scanner devices connect via WiFi to the PWA interface.  
+6. File uploads go to S3-compatible object storage.
+
+---
+
+# 2. Stakeholders & User Roles
+
+There are **7 defined roles in WOCS**. Each role maps to a set of permissions enforced at the API level.
+
+Role assignment is managed by **IT Administrator**.
+
+---
+
+# 2.1 Role Definitions
+
+| Role | Primary Function | Key Permissions |
+|---|---|---|
+| Warehouse Operator | Day-to-day floor operations | Receive stock, update order states, scan barcodes |
+| Warehouse Manager | Site-level oversight | Approve adjustments, manage operator accounts |
+| Regional Operations Head | Cross-warehouse oversight | Configure SLA rules, view regional reports |
+| Finance | Billing reconciliation | Configure billing rates, export billing data |
+| Sales / Client Servicing | Client relationship | Read-only order and inventory visibility |
+| Client User | External client visibility | View own inventory, orders, SLA metrics |
+| IT Administrator | System configuration | Full system access |
+
+---
+
+# 3. Data Models & Database Schema
+
+All tables use **PostgreSQL**.
+
+Key rules:
+
+- UUIDs used for primary keys
+- Timestamps stored in UTC
+- Soft deletes using `is_active`
+- Master data never hard deleted
+
+---
+
+## Core Entities
+
+### Warehouses
+
+Columns:
+
+- id (UUID PK)
+- code
+- name
+- type (storage_only, fulfillment, temperature_sensitive)
+- timezone
+- address
+- is_active
+- created_at
+- updated_at
+
+---
+
+### Warehouse Configuration
+
+Fields include:
+
+- mandatory_location_assignment
+- mandatory_serial_capture_default
+- serial_capture_overrides (JSONB)
+- sla_warning_lead_hours
+- max_offline_buffer_minutes
+- notification_frequency
+- low_inventory_threshold_pct
+
+---
+
+### Clients
+
+Fields include:
+
+- id
+- code
+- name
+- contact_email
+- billing_cycle_day
+- is_active
+
+---
+
+### SKUs (Product Master)
+
+Fields include:
+
+- client_id
+- sku_code
+- description
+- storage_type
+- track_batch
+- track_expiry
+- track_serial
+- unit_of_measure
+- barcode
+
+---
+
+### Inventory Positions
+
+Represents current stock levels.
+
+Key fields:
+
+- warehouse_id
+- client_id
+- sku_id
+- location_id
+- batch_number
+- expiry_date
+- quantity_on_hand
+- quantity_reserved
+- quantity_available (computed)
+
+---
+
+### Orders
+
+Fields include:
+
+- order_ref
+- internal_ref
+- warehouse_id
+- client_id
+- status
+- priority
+- shipping_method
+- billing_category
+- delivery_address (JSONB)
+- sla_start_at
+- sla_deadline_at
+- sla_breached
+- dispatched_at
+- delivered_at
+
+---
+
+### Inventory Movements (Audit Log)
+
+Append-only table recording all inventory changes.
+
+Fields include:
+
+- movement_type
+- reference_type
+- reference_id
+- quantity_before
+- quantity_change
+- quantity_after
+- reason_category
+- performed_by
+- performed_at
+
+---
+
+# 4. API Design
+
+All APIs are **RESTful over HTTPS**.
+
+Response format:
+
+```
+{
+ success: boolean,
+ data: object | array,
+ meta: { page, total },
+ error: { code, message }
+}
+```
+
+Versioning:
+
+```
+/api/v1/
+```
+
+---
+
+## Authentication Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | /api/v1/auth/login | Login |
+| POST | /api/v1/auth/refresh | Refresh access token |
+| POST | /api/v1/auth/logout | Logout |
+| GET | /api/v1/auth/me | Current user profile |
+
+---
+
+## Inventory Endpoints
+
+Examples:
+
+- `GET /api/v1/inventory`
+- `POST /api/v1/inventory/receive`
+- `POST /api/v1/inventory/adjust`
+- `POST /api/v1/inventory/transfer`
+- `GET /api/v1/inventory/movements`
+- `GET /api/v1/inventory/aging`
+
+---
+
+## Order Endpoints
+
+Examples:
+
+- `GET /api/v1/orders`
+- `POST /api/v1/orders`
+- `POST /api/v1/orders/import`
+- `PUT /api/v1/orders/:id/status`
+- `PUT /api/v1/orders/:id/cancel`
+- `GET /api/v1/orders/sla-dashboard`
+
+---
+
+## Billing Endpoints
+
+Examples:
+
+- `/api/v1/billing/rates`
+- `/api/v1/billing/cycles`
+- `/api/v1/billing/charges`
+- `/api/v1/billing/export`
+
+---
+
+# 5. Core Operational Workflows
+
+Key workflows defined:
+
+1. Inventory receiving
+2. Order lifecycle
+3. SLA monitoring
+4. Billing charge calculation
+5. Inter-warehouse transfer
+6. Inventory adjustment
+7. Data migration
+8. New warehouse onboarding
+
+---
+
+## Order Lifecycle (FSM)
+
+State transitions:
+
+```
+new → received → allocated → picked → packed → dispatched → delivered
+```
+
+Additional transition:
+
+```
+any → cancelled (before dispatch)
+```
+
+Partial fulfillment allowed.
+
+---
+
+# 6. Feature Specifications
+
+Key features:
+
+### Barcode Scanning
+
+Used for:
+
+- Receiving
+- Picking
+- Adjustments
+
+Supports:
+
+- USB barcode scanners
+- Camera scanning (PWA)
+
+---
+
+### Notification System
+
+Alert types include:
+
+- Low inventory
+- SLA warning
+- SLA breach
+- Expiry alerts
+- Daily summary
+- Billing cycle closed
+
+Channels:
+
+- Email
+- Push notifications
+
+---
+
+### Reporting
+
+Operations Reports:
+
+- Inventory snapshot
+- Aging stock
+- SLA adherence
+- Order turnaround
+
+Finance Reports:
+
+- Storage charges
+- Handling charges
+- Picking charges
+- Monthly billing summary
+
+Client Reports:
+
+- Inventory snapshot
+- Order status
+- SLA metrics
+
+---
+
+# 7. Security Design
+
+Authentication:
+
+- bcrypt password hashing
+- JWT access tokens (15 min)
+- refresh tokens (7 days)
+
+Authorization:
+
+- role-based middleware
+- warehouse-level scope
+- client-level isolation
+
+Infrastructure:
+
+- HTTPS only
+- S3 signed URLs
+- API rate limiting
+
+---
+
+# 8. Non-Functional Implementation Details
+
+### Performance Targets
+
+- 150 concurrent users
+- ≤ 3 second response time
+
+---
+
+### Scalability
+
+Supports:
+
+- 8–9 warehouses
+- multiple clients
+- central PostgreSQL instance
+
+---
+
+### Environments
+
+| Environment | Purpose |
+|---|---|
+| Development | Local dev |
+| Staging | Pre-production testing |
+| Production (Pilot) | First warehouse rollout |
+| Production (Full) | All warehouses |
+
+---
+
+# 9. Background Jobs
+
+Examples:
+
+- sla-monitor (every 15 min)
+- notification-daily-batch
+- expiry-alert-scan
+- low-stock-scan
+- billing-charge-calc
+- file-import-processor
+- audit-archival
+- export-generator
+
+---
+
+# 10. Data Migration
+
+Migration sources:
+
+- inventory balances
+- open orders
+- client master
+- SKU master
+
+CSV templates used for migration.
+
+Validation requires **zero discrepancy before commit**.
+
+---
+
+# 11. Testing Requirements
+
+| Test Type | Tool |
+|---|---|
+| Unit Tests | Jest |
+| Integration Tests | Supertest |
+| E2E Tests | Playwright |
+| Performance Tests | k6 |
+
+Coverage target: **80% service layer coverage**.
+
+---
+
+# 12. Glossary
+
+Important terms:
+
+- SKU — Stock Keeping Unit
+- SLA — Service Level Agreement
+- FSM — Finite State Machine
+- inventory_position — stock record per location
+- transfer — warehouse-to-warehouse movement
+- adjustment — manual stock correction
+- PWA — Progressive Web App
+- BullMQ — Redis job queue
+
+---
+
+✅ If you want, I can also:
+
+- Convert this **entire document into Markdown or PDF notes**
+- Generate a **system architecture diagram**
+- Extract **database schema → SQL CREATE TABLE statements**
+- Create a **system design explanation (like an interview/system design walkthrough)**.
