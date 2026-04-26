@@ -23,7 +23,17 @@ let OrdersController = class OrdersController {
     }
     findAll(q, req) {
         const clientId = req.user?.role === 'CLIENT_USER' ? req.user.clientId : undefined;
-        return this.ordersService.findAll(q, clientId);
+        const customerId = req.user?.role === 'CUSTOMER' ? req.user.customerId : undefined;
+        return this.ordersService.findAll(q, clientId, customerId);
+    }
+    create(body, req) {
+        return this.ordersService.create(body, req.user.id);
+    }
+    updateStatus(id, status, req) {
+        return this.ordersService.updateStatus(id, status, req.user.id);
+    }
+    cancel(id, req) {
+        return this.ordersService.cancel(id, req.user.id);
     }
     findOne(id) {
         return this.ordersService.findOne(id);
@@ -39,6 +49,34 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Post)(),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "create", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Patch)(':id/status'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)('status')),
+    __param(2, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Object]),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "updateStatus", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Delete)(':id'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "cancel", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Get)(':id'),

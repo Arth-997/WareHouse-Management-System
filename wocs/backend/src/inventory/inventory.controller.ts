@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Request, UseGuards } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
@@ -9,9 +9,23 @@ export class InventoryController {
   @UseGuards(JwtAuthGuard)
   @Get()
   findAll(@Query('q') q: string | undefined, @Request() req: any) {
-    // CLIENT_USER only sees their own inventory
     const clientId = req.user?.role === 'CLIENT_USER' ? req.user.clientId : undefined;
     return this.inventoryService.findAll(q, clientId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('skus')
+  findSkus(@Query('clientId') clientId?: string) {
+    return this.inventoryService.findSkus(clientId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('receive')
+  receiveStock(@Body() body: any, @Request() req: any) {
+    return this.inventoryService.receiveStock({
+      ...body,
+      performedById: req.user.id,
+    });
   }
 
   @UseGuards(JwtAuthGuard)
@@ -20,3 +34,4 @@ export class InventoryController {
     return this.inventoryService.findOne(id);
   }
 }
+

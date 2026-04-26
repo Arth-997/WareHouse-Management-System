@@ -55,7 +55,7 @@ let AuthService = class AuthService {
         this.prisma = prisma;
     }
     sanitizeUser(user) {
-        return { id: user.id, name: user.name, email: user.email, role: user.role, avatarUrl: user.avatarUrl ?? undefined, clientId: user.clientId ?? undefined };
+        return { id: user.id, name: user.name, email: user.email, role: user.role, avatarUrl: user.avatarUrl ?? undefined, clientId: user.clientId ?? undefined, customerId: user.customerId ?? undefined };
     }
     async register(createAuthDto) {
         const name = createAuthDto?.name?.trim();
@@ -71,7 +71,7 @@ let AuthService = class AuthService {
         const passwordHash = await bcrypt.hash(password, 10);
         const user = await this.prisma.user.create({
             data: { name, email, password: passwordHash, role },
-            select: { id: true, name: true, email: true, role: true, avatarUrl: true, clientId: true },
+            select: { id: true, name: true, email: true, role: true, avatarUrl: true, clientId: true, customerId: true },
         });
         return this.sanitizeUser(user);
     }
@@ -82,14 +82,14 @@ let AuthService = class AuthService {
             throw new common_1.BadRequestException('email and password are required');
         const user = await this.prisma.user.findUnique({
             where: { email },
-            select: { id: true, name: true, email: true, role: true, avatarUrl: true, password: true, clientId: true },
+            select: { id: true, name: true, email: true, role: true, avatarUrl: true, password: true, clientId: true, customerId: true },
         });
         if (!user?.password)
             throw new common_1.UnauthorizedException('Invalid credentials');
         const ok = await bcrypt.compare(password, user.password);
         if (!ok)
             throw new common_1.UnauthorizedException('Invalid credentials');
-        const token = await this.jwtService.signAsync({ sub: user.id, email: user.email, role: user.role, clientId: user.clientId ?? undefined });
+        const token = await this.jwtService.signAsync({ sub: user.id, email: user.email, role: user.role, clientId: user.clientId ?? undefined, customerId: user.customerId ?? undefined });
         return {
             token,
             user: this.sanitizeUser(user),
@@ -111,7 +111,7 @@ let AuthService = class AuthService {
                 }
                 : undefined,
             orderBy: { name: 'asc' },
-            select: { id: true, name: true, email: true, role: true, avatarUrl: true, clientId: true },
+            select: { id: true, name: true, email: true, role: true, avatarUrl: true, clientId: true, customerId: true },
         });
         return users.map((u) => this.sanitizeUser(u));
     }
@@ -137,7 +137,7 @@ let AuthService = class AuthService {
         const user = await this.prisma.user.update({
             where: { id: userId },
             data,
-            select: { id: true, name: true, email: true, role: true, avatarUrl: true, clientId: true },
+            select: { id: true, name: true, email: true, role: true, avatarUrl: true, clientId: true, customerId: true },
         });
         return this.sanitizeUser(user);
     }

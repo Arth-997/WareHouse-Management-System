@@ -146,7 +146,7 @@ async function main() {
 
     console.log('✅ Warehouses seeded');
 
-    // ── Clients ────────────────────────────────────────────────────────
+    // ── Clients (brands/suppliers who store goods) ────────────────────
     const techCorp = await prisma.client.upsert({
         where: { code: 'TECHCORP' },
         update: {},
@@ -187,6 +187,60 @@ async function main() {
         where: { id: clientUser.id },
         data: { clientId: techCorp.id },
     });
+
+    // ── Customers (end-buyers who order goods) ──────────────────────
+    const raviElec = await prisma.customer.upsert({
+        where: { code: 'RAVIELEC' },
+        update: {},
+        create: {
+            code: 'RAVIELEC',
+            name: 'Ravi Electronics',
+            contactEmail: 'orders@ravielec.in',
+            phone: '+91-9876543210',
+            address: { line1: '12, MG Road', city: 'Mumbai', state: 'Maharashtra', zip: '400001' },
+        },
+    });
+
+    const quickBuy = await prisma.customer.upsert({
+        where: { code: 'QUICKBUY' },
+        update: {},
+        create: {
+            code: 'QUICKBUY',
+            name: 'QuickBuy Store',
+            contactEmail: 'supply@quickbuy.com',
+            phone: '+91-9988776655',
+            address: { line1: '45, Rajaji Nagar', city: 'Bangalore', state: 'Karnataka', zip: '560010' },
+        },
+    });
+
+    const cityMart = await prisma.customer.upsert({
+        where: { code: 'CITYMART' },
+        update: {},
+        create: {
+            code: 'CITYMART',
+            name: 'CityMart Retail',
+            contactEmail: 'procurement@citymart.in',
+            phone: '+91-9112233445',
+            address: { line1: '78, Connaught Place', city: 'New Delhi', state: 'Delhi', zip: '110001' },
+        },
+    });
+
+    console.log('✅ Customers seeded');
+
+    // ── Customer User ────────────────────────────────────────────────
+    const customerUser = await prisma.user.upsert({
+        where: { email: 'customer@ravielec.in' },
+        update: {},
+        create: {
+            name: 'Ravi Kumar',
+            email: 'customer@ravielec.in',
+            password: hash('customer123'),
+            role: 'CUSTOMER',
+            customerId: raviElec.id,
+        },
+    });
+
+    console.log('✅ Customer user seeded');
 
     // ── SKUs ───────────────────────────────────────────────────────────
     const skus = await Promise.all([
@@ -244,20 +298,20 @@ async function main() {
 
     console.log('✅ SKUs seeded');
 
-    // ── Inventory Positions ────────────────────────────────────────────
+    // ── Inventory Positions (reserved = 0, will be managed by orders) ─
     const invData = [
-        { warehouseId: wh1.id, clientId: techCorp.id, skuId: skus[0].id, quantityOnHand: 150, quantityReserved: 30 },
-        { warehouseId: wh1.id, clientId: techCorp.id, skuId: skus[1].id, quantityOnHand: 500, quantityReserved: 80 },
-        { warehouseId: wh1.id, clientId: techCorp.id, skuId: skus[2].id, quantityOnHand: 320, quantityReserved: 45 },
-        { warehouseId: wh2.id, clientId: techCorp.id, skuId: skus[3].id, quantityOnHand: 75, quantityReserved: 10 },
-        { warehouseId: wh2.id, clientId: globalRetail.id, skuId: skus[4].id, quantityOnHand: 1200, quantityReserved: 200, batchNumber: 'BATCH-2026-Q1' },
-        { warehouseId: wh2.id, clientId: globalRetail.id, skuId: skus[5].id, quantityOnHand: 800, quantityReserved: 120, batchNumber: 'BATCH-2026-Q1' },
-        { warehouseId: wh1.id, clientId: globalRetail.id, skuId: skus[6].id, quantityOnHand: 450, quantityReserved: 60 },
-        { warehouseId: wh3.id, clientId: fastMart.id, skuId: skus[7].id, quantityOnHand: 600, quantityReserved: 150, expiryDate: new Date('2026-05-15') },
-        { warehouseId: wh3.id, clientId: fastMart.id, skuId: skus[8].id, quantityOnHand: 400, quantityReserved: 90, expiryDate: new Date('2026-04-30') },
-        { warehouseId: wh5.id, clientId: fastMart.id, skuId: skus[9].id, quantityOnHand: 2000, quantityReserved: 300 },
-        { warehouseId: wh1.id, clientId: fastMart.id, skuId: skus[9].id, quantityOnHand: 1500, quantityReserved: 200 },
-        { warehouseId: wh2.id, clientId: techCorp.id, skuId: skus[0].id, quantityOnHand: 90, quantityReserved: 25 },
+        { warehouseId: wh1.id, clientId: techCorp.id, skuId: skus[0].id, quantityOnHand: 150, quantityReserved: 0 },
+        { warehouseId: wh1.id, clientId: techCorp.id, skuId: skus[1].id, quantityOnHand: 500, quantityReserved: 0 },
+        { warehouseId: wh1.id, clientId: techCorp.id, skuId: skus[2].id, quantityOnHand: 320, quantityReserved: 0 },
+        { warehouseId: wh2.id, clientId: techCorp.id, skuId: skus[3].id, quantityOnHand: 75, quantityReserved: 0 },
+        { warehouseId: wh2.id, clientId: globalRetail.id, skuId: skus[4].id, quantityOnHand: 1200, quantityReserved: 0, batchNumber: 'BATCH-2026-Q1' },
+        { warehouseId: wh2.id, clientId: globalRetail.id, skuId: skus[5].id, quantityOnHand: 800, quantityReserved: 0, batchNumber: 'BATCH-2026-Q1' },
+        { warehouseId: wh1.id, clientId: globalRetail.id, skuId: skus[6].id, quantityOnHand: 450, quantityReserved: 0 },
+        { warehouseId: wh3.id, clientId: fastMart.id, skuId: skus[7].id, quantityOnHand: 600, quantityReserved: 0, expiryDate: new Date('2026-05-15') },
+        { warehouseId: wh3.id, clientId: fastMart.id, skuId: skus[8].id, quantityOnHand: 400, quantityReserved: 0, expiryDate: new Date('2026-04-30') },
+        { warehouseId: wh5.id, clientId: fastMart.id, skuId: skus[9].id, quantityOnHand: 2000, quantityReserved: 0 },
+        { warehouseId: wh1.id, clientId: fastMart.id, skuId: skus[9].id, quantityOnHand: 1500, quantityReserved: 0 },
+        { warehouseId: wh2.id, clientId: techCorp.id, skuId: skus[0].id, quantityOnHand: 90, quantityReserved: 0 },
     ];
 
     for (const inv of invData) {
@@ -268,56 +322,111 @@ async function main() {
                 skuId: inv.skuId,
             },
         });
-        if (!existing) {
+        if (existing) {
+            await prisma.inventoryPosition.update({
+                where: { id: existing.id },
+                data: { quantityOnHand: inv.quantityOnHand, quantityReserved: inv.quantityReserved },
+            });
+        } else {
             await prisma.inventoryPosition.create({ data: inv });
         }
     }
 
     console.log('✅ Inventory positions seeded');
 
-    // ── Orders ─────────────────────────────────────────────────────────
+    // ── Orders (with line items) ────────────────────────────────────
+    // Clear existing orders and re-seed with proper line items
+    await prisma.orderLine.deleteMany({});
+    await prisma.order.deleteMany({});
+
     const now = Date.now();
     const h = (hours: number) => new Date(now + hours * 3600_000);
     const ago = (hours: number) => new Date(now - hours * 3600_000);
 
-    const orderData = [
-        // Active - on track
-        { orderRef: 'ORD-2026-0001', warehouseId: wh1.id, clientId: techCorp.id, status: 'received', priority: 'normal', shippingMethod: 'standard', billingCategory: 'storage_handling', deliveryAddress: { city: 'Mumbai', zip: '400001' }, slaStartAt: ago(2), slaDeadlineAt: h(22) },
-        { orderRef: 'ORD-2026-0002', warehouseId: wh1.id, clientId: techCorp.id, status: 'allocated', priority: 'high', shippingMethod: 'express', billingCategory: 'express_fulfillment', deliveryAddress: { city: 'Pune', zip: '411001' }, slaStartAt: ago(4), slaDeadlineAt: h(20) },
-        { orderRef: 'ORD-2026-0003', warehouseId: wh2.id, clientId: globalRetail.id, status: 'picked', priority: 'normal', shippingMethod: 'standard', billingCategory: 'storage_handling', deliveryAddress: { city: 'Delhi', zip: '110001' }, slaStartAt: ago(6), slaDeadlineAt: h(18) },
-        { orderRef: 'ORD-2026-0004', warehouseId: wh2.id, clientId: globalRetail.id, status: 'packed', priority: 'normal', shippingMethod: 'standard', billingCategory: 'storage_handling', deliveryAddress: { city: 'Noida', zip: '201301' }, slaStartAt: ago(8), slaDeadlineAt: h(16) },
+    // Helper to create order with lines
+    const createOrderWithLines = async (
+        orderData: any,
+        lines: { skuId: string; quantity: number }[],
+    ) => {
+        const order = await prisma.order.create({ data: orderData });
+        for (const line of lines) {
+            await prisma.orderLine.create({
+                data: { orderId: order.id, skuId: line.skuId, quantity: line.quantity },
+            });
+        }
+        return order;
+    };
 
-        // Active - warning (deadline within 2 hours)
-        { orderRef: 'ORD-2026-0005', warehouseId: wh1.id, clientId: fastMart.id, status: 'allocated', priority: 'high', shippingMethod: 'express', billingCategory: 'express_fulfillment', deliveryAddress: { city: 'Mumbai', zip: '400051' }, slaStartAt: ago(10), slaDeadlineAt: h(1.5) },
-        { orderRef: 'ORD-2026-0006', warehouseId: wh3.id, clientId: fastMart.id, status: 'picked', priority: 'normal', shippingMethod: 'cold_chain', billingCategory: 'cold_storage', deliveryAddress: { city: 'Bangalore', zip: '560001' }, slaStartAt: ago(12), slaDeadlineAt: h(0.5) },
+    // Active orders with line items
+    await createOrderWithLines(
+        { orderRef: 'ORD-2026-0001', warehouseId: wh1.id, clientId: techCorp.id, customerId: raviElec.id, status: 'received', priority: 'normal', shippingMethod: 'standard', billingCategory: 'storage_handling', deliveryAddress: { city: 'Mumbai', zip: '400001' }, slaStartAt: ago(2), slaDeadlineAt: h(22) },
+        [{ skuId: skus[0].id, quantity: 10 }, { skuId: skus[1].id, quantity: 25 }],
+    );
+    await createOrderWithLines(
+        { orderRef: 'ORD-2026-0002', warehouseId: wh1.id, clientId: techCorp.id, customerId: quickBuy.id, status: 'allocated', priority: 'high', shippingMethod: 'express', billingCategory: 'express_fulfillment', deliveryAddress: { city: 'Pune', zip: '411001' }, slaStartAt: ago(4), slaDeadlineAt: h(20) },
+        [{ skuId: skus[2].id, quantity: 15 }],
+    );
+    await createOrderWithLines(
+        { orderRef: 'ORD-2026-0003', warehouseId: wh2.id, clientId: globalRetail.id, customerId: cityMart.id, status: 'picked', priority: 'normal', shippingMethod: 'standard', billingCategory: 'storage_handling', deliveryAddress: { city: 'Delhi', zip: '110001' }, slaStartAt: ago(6), slaDeadlineAt: h(18) },
+        [{ skuId: skus[4].id, quantity: 50 }, { skuId: skus[5].id, quantity: 30 }],
+    );
+    await createOrderWithLines(
+        { orderRef: 'ORD-2026-0004', warehouseId: wh2.id, clientId: globalRetail.id, customerId: raviElec.id, status: 'packed', priority: 'normal', shippingMethod: 'standard', billingCategory: 'storage_handling', deliveryAddress: { city: 'Noida', zip: '201301' }, slaStartAt: ago(8), slaDeadlineAt: h(16) },
+        [{ skuId: skus[5].id, quantity: 20 }],
+    );
 
-        // Active - breached
-        { orderRef: 'ORD-2026-0007', warehouseId: wh5.id, clientId: fastMart.id, status: 'received', priority: 'normal', shippingMethod: 'standard', billingCategory: 'storage_handling', deliveryAddress: { city: 'Kolkata', zip: '700001' }, slaStartAt: ago(30), slaDeadlineAt: ago(6), slaBreached: true },
-        { orderRef: 'ORD-2026-0008', warehouseId: wh1.id, clientId: techCorp.id, status: 'allocated', priority: 'high', shippingMethod: 'express', billingCategory: 'express_fulfillment', deliveryAddress: { city: 'Thane', zip: '400601' }, slaStartAt: ago(28), slaDeadlineAt: ago(4), slaBreached: true },
-        { orderRef: 'ORD-2026-0009', warehouseId: wh2.id, clientId: globalRetail.id, status: 'picked', priority: 'normal', shippingMethod: 'standard', billingCategory: 'storage_handling', deliveryAddress: { city: 'Gurgaon', zip: '122001' }, slaStartAt: ago(26), slaDeadlineAt: ago(2), slaBreached: true },
+    // Warning orders
+    await createOrderWithLines(
+        { orderRef: 'ORD-2026-0005', warehouseId: wh1.id, clientId: fastMart.id, customerId: quickBuy.id, status: 'allocated', priority: 'high', shippingMethod: 'express', billingCategory: 'express_fulfillment', deliveryAddress: { city: 'Mumbai', zip: '400051' }, slaStartAt: ago(10), slaDeadlineAt: h(1.5) },
+        [{ skuId: skus[9].id, quantity: 100 }],
+    );
+    await createOrderWithLines(
+        { orderRef: 'ORD-2026-0006', warehouseId: wh3.id, clientId: fastMart.id, customerId: cityMart.id, status: 'picked', priority: 'normal', shippingMethod: 'cold_chain', billingCategory: 'cold_storage', deliveryAddress: { city: 'Bangalore', zip: '560001' }, slaStartAt: ago(12), slaDeadlineAt: h(0.5) },
+        [{ skuId: skus[7].id, quantity: 80 }, { skuId: skus[8].id, quantity: 40 }],
+    );
 
-        // Dispatched
-        { orderRef: 'ORD-2026-0010', warehouseId: wh1.id, clientId: techCorp.id, status: 'dispatched', priority: 'normal', shippingMethod: 'standard', billingCategory: 'storage_handling', deliveryAddress: { city: 'Mumbai', zip: '400018' }, slaStartAt: ago(48), slaDeadlineAt: ago(24), dispatchedAt: ago(26) },
-        { orderRef: 'ORD-2026-0011', warehouseId: wh3.id, clientId: fastMart.id, status: 'dispatched', priority: 'high', shippingMethod: 'cold_chain', billingCategory: 'cold_storage', deliveryAddress: { city: 'Mysore', zip: '570001' }, slaStartAt: ago(36), slaDeadlineAt: ago(12), dispatchedAt: ago(14) },
+    // Breached orders
+    await createOrderWithLines(
+        { orderRef: 'ORD-2026-0007', warehouseId: wh5.id, clientId: fastMart.id, customerId: raviElec.id, status: 'received', priority: 'normal', shippingMethod: 'standard', billingCategory: 'storage_handling', deliveryAddress: { city: 'Kolkata', zip: '700001' }, slaStartAt: ago(30), slaDeadlineAt: ago(6), slaBreached: true },
+        [{ skuId: skus[9].id, quantity: 200 }],
+    );
+    await createOrderWithLines(
+        { orderRef: 'ORD-2026-0008', warehouseId: wh1.id, clientId: techCorp.id, customerId: quickBuy.id, status: 'allocated', priority: 'high', shippingMethod: 'express', billingCategory: 'express_fulfillment', deliveryAddress: { city: 'Thane', zip: '400601' }, slaStartAt: ago(28), slaDeadlineAt: ago(4), slaBreached: true },
+        [{ skuId: skus[0].id, quantity: 5 }, { skuId: skus[1].id, quantity: 10 }],
+    );
 
-        // Delivered
-        { orderRef: 'ORD-2026-0012', warehouseId: wh2.id, clientId: globalRetail.id, status: 'delivered', priority: 'normal', shippingMethod: 'standard', billingCategory: 'storage_handling', deliveryAddress: { city: 'Delhi', zip: '110016' }, slaStartAt: ago(72), slaDeadlineAt: ago(48), dispatchedAt: ago(50), deliveredAt: ago(46) },
-        { orderRef: 'ORD-2026-0013', warehouseId: wh1.id, clientId: techCorp.id, status: 'delivered', priority: 'normal', shippingMethod: 'express', billingCategory: 'express_fulfillment', deliveryAddress: { city: 'Pune', zip: '411014' }, slaStartAt: ago(96), slaDeadlineAt: ago(72), dispatchedAt: ago(74), deliveredAt: ago(70) },
-        { orderRef: 'ORD-2026-0014', warehouseId: wh5.id, clientId: fastMart.id, status: 'delivered', priority: 'normal', shippingMethod: 'standard', billingCategory: 'storage_handling', deliveryAddress: { city: 'Howrah', zip: '711101' }, slaStartAt: ago(120), slaDeadlineAt: ago(96), dispatchedAt: ago(98), deliveredAt: ago(94) },
-        { orderRef: 'ORD-2026-0015', warehouseId: wh3.id, clientId: fastMart.id, status: 'delivered', priority: 'high', shippingMethod: 'cold_chain', billingCategory: 'cold_storage', deliveryAddress: { city: 'Bangalore', zip: '560034' }, slaStartAt: ago(144), slaDeadlineAt: ago(120), dispatchedAt: ago(122), deliveredAt: ago(118) },
-    ];
+    // Dispatched
+    await createOrderWithLines(
+        { orderRef: 'ORD-2026-0010', warehouseId: wh1.id, clientId: techCorp.id, customerId: cityMart.id, status: 'dispatched', priority: 'normal', shippingMethod: 'standard', billingCategory: 'storage_handling', deliveryAddress: { city: 'Mumbai', zip: '400018' }, slaStartAt: ago(48), slaDeadlineAt: ago(24), dispatchedAt: ago(26) },
+        [{ skuId: skus[0].id, quantity: 8 }],
+    );
+    await createOrderWithLines(
+        { orderRef: 'ORD-2026-0011', warehouseId: wh3.id, clientId: fastMart.id, customerId: raviElec.id, status: 'dispatched', priority: 'high', shippingMethod: 'cold_chain', billingCategory: 'cold_storage', deliveryAddress: { city: 'Mysore', zip: '570001' }, slaStartAt: ago(36), slaDeadlineAt: ago(12), dispatchedAt: ago(14) },
+        [{ skuId: skus[8].id, quantity: 60 }],
+    );
 
-    for (const ord of orderData) {
-        await prisma.order.upsert({
-            where: { orderRef: ord.orderRef },
-            update: {},
-            create: ord,
-        });
-    }
+    // Delivered
+    await createOrderWithLines(
+        { orderRef: 'ORD-2026-0012', warehouseId: wh2.id, clientId: globalRetail.id, customerId: raviElec.id, status: 'delivered', priority: 'normal', shippingMethod: 'standard', billingCategory: 'storage_handling', deliveryAddress: { city: 'Delhi', zip: '110016' }, slaStartAt: ago(72), slaDeadlineAt: ago(48), dispatchedAt: ago(50), deliveredAt: ago(46) },
+        [{ skuId: skus[4].id, quantity: 100 }, { skuId: skus[6].id, quantity: 30 }],
+    );
+    await createOrderWithLines(
+        { orderRef: 'ORD-2026-0013', warehouseId: wh1.id, clientId: techCorp.id, customerId: quickBuy.id, status: 'delivered', priority: 'normal', shippingMethod: 'express', billingCategory: 'express_fulfillment', deliveryAddress: { city: 'Pune', zip: '411014' }, slaStartAt: ago(96), slaDeadlineAt: ago(72), dispatchedAt: ago(74), deliveredAt: ago(70) },
+        [{ skuId: skus[1].id, quantity: 50 }],
+    );
+    await createOrderWithLines(
+        { orderRef: 'ORD-2026-0014', warehouseId: wh5.id, clientId: fastMart.id, customerId: cityMart.id, status: 'delivered', priority: 'normal', shippingMethod: 'standard', billingCategory: 'storage_handling', deliveryAddress: { city: 'Howrah', zip: '711101' }, slaStartAt: ago(120), slaDeadlineAt: ago(96), dispatchedAt: ago(98), deliveredAt: ago(94) },
+        [{ skuId: skus[9].id, quantity: 150 }],
+    );
+    await createOrderWithLines(
+        { orderRef: 'ORD-2026-0015', warehouseId: wh3.id, clientId: fastMart.id, customerId: raviElec.id, status: 'delivered', priority: 'high', shippingMethod: 'cold_chain', billingCategory: 'cold_storage', deliveryAddress: { city: 'Bangalore', zip: '560034' }, slaStartAt: ago(144), slaDeadlineAt: ago(120), dispatchedAt: ago(122), deliveredAt: ago(118) },
+        [{ skuId: skus[7].id, quantity: 120 }],
+    );
 
-    console.log('✅ Orders seeded');
+    console.log('✅ Orders with line items seeded');
 
     // ── Inventory Movements (sample) ───────────────────────────────────
+    await prisma.inventoryMovement.deleteMany({});
     const movements = [
         { movementType: 'receive', referenceType: 'Adjustment', quantityBefore: 0, quantityChange: 150, quantityAfter: 150, performedById: operator.id, reasonCategory: 'initial_stock' },
         { movementType: 'pick', referenceType: 'Order', referenceId: 'ORD-2026-0001', quantityBefore: 150, quantityChange: -30, quantityAfter: 120, performedById: operator.id, reasonCategory: 'order_fulfillment' },
@@ -332,6 +441,7 @@ async function main() {
     console.log('✅ Inventory movements seeded');
 
     // ── Inventory Requests (samples) ─────────────────────────────────
+    await prisma.inventoryRequest.deleteMany({});
     const irData = [
         { warehouseId: wh1.id, clientId: techCorp.id, skuId: skus[0].id, requestedQty: 50, status: 'pending', notes: 'Running low on laptops for Q2 orders', requestedById: manager.id },
         { warehouseId: wh2.id, clientId: globalRetail.id, skuId: skus[4].id, requestedQty: 300, status: 'approved', notes: 'Need shirts for upcoming sale season', requestedById: operator.id, respondedAt: ago(12) },
@@ -345,7 +455,8 @@ async function main() {
 
     console.log('✅ Inventory requests seeded');
     console.log('\n🎉 Database seeded successfully!');
-    console.log('   Admin login: admin@wocs.com / admin123');
+    console.log('   Admin login:    admin@wocs.com / admin123');
+    console.log('   Customer login: customer@ravielec.in / customer123');
 }
 
 main()

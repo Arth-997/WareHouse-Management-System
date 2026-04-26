@@ -9,6 +9,7 @@ export type UserRole =
     | 'FINANCE'
     | 'SALES'
     | 'CLIENT_USER'
+    | 'CUSTOMER';
 
 export interface AuthUser {
     id: string
@@ -30,16 +31,15 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState<AuthUser | null>(null)
-    const [token, setToken] = useState<string | null>(null)
+    const [user, setUser] = useState<AuthUser | null>(() => {
+        try {
+            const storedUser = localStorage.getItem('wocs_user');
+            return storedUser ? JSON.parse(storedUser) : null;
+        } catch { return null; }
+    });
+    const [token, setToken] = useState<string | null>(() => localStorage.getItem('wocs_token'));
 
     useEffect(() => {
-        const storedToken = localStorage.getItem('wocs_token')
-        const storedUser = localStorage.getItem('wocs_user')
-        if (storedToken && storedUser) {
-            setToken(storedToken)
-            setUser(JSON.parse(storedUser))
-        }
 
         // Handle OAuth redirect callback: ?token=xxx&user=xxx
         const params = new URLSearchParams(window.location.search)

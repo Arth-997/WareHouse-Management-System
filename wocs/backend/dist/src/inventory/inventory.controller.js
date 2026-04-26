@@ -25,6 +25,15 @@ let InventoryController = class InventoryController {
         const clientId = req.user?.role === 'CLIENT_USER' ? req.user.clientId : undefined;
         return this.inventoryService.findAll(q, clientId);
     }
+    findSkus(clientId) {
+        return this.inventoryService.findSkus(clientId);
+    }
+    receiveStock(body, req) {
+        return this.inventoryService.receiveStock({
+            ...body,
+            performedById: req.user.id,
+        });
+    }
     findOne(id) {
         return this.inventoryService.findOne(id);
     }
@@ -39,6 +48,23 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", void 0)
 ], InventoryController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('skus'),
+    __param(0, (0, common_1.Query)('clientId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], InventoryController.prototype, "findSkus", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Post)('receive'),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", void 0)
+], InventoryController.prototype, "receiveStock", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Get)(':id'),

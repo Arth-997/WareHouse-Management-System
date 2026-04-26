@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Request, UseGuards } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
@@ -10,7 +10,26 @@ export class OrdersController {
   @Get()
   findAll(@Query('q') q: string | undefined, @Request() req: any) {
     const clientId = req.user?.role === 'CLIENT_USER' ? req.user.clientId : undefined;
-    return this.ordersService.findAll(q, clientId);
+    const customerId = req.user?.role === 'CUSTOMER' ? req.user.customerId : undefined;
+    return this.ordersService.findAll(q, clientId, customerId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post()
+  create(@Body() body: any, @Request() req: any) {
+    return this.ordersService.create(body, req.user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/status')
+  updateStatus(@Param('id') id: string, @Body('status') status: string, @Request() req: any) {
+    return this.ordersService.updateStatus(id, status, req.user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  cancel(@Param('id') id: string, @Request() req: any) {
+    return this.ordersService.cancel(id, req.user.id);
   }
 
   @UseGuards(JwtAuthGuard)

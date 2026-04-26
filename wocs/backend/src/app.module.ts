@@ -9,6 +9,9 @@ import { BillingModule } from './billing/billing.module';
 import { WarehousesModule } from './warehouses/warehouses.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { InventoryRequestsModule } from './inventory-requests/inventory-requests.module';
+import { ClientsModule } from './clients/clients.module';
+import { CustomersModule } from './customers/customers.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -20,6 +23,9 @@ import { InventoryRequestsModule } from './inventory-requests/inventory-requests
     WarehousesModule,
     DashboardModule,
     InventoryRequestsModule,
+    ClientsModule,
+    CustomersModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

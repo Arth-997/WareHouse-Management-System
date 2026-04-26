@@ -12,8 +12,9 @@ import {
   LogOut,
   Shield,
   ArrowLeftRight,
+  Menu,
 } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useAuth, type UserRole } from "../components/AuthContext";
 
 type NavItem = {
@@ -31,6 +32,7 @@ const ALL_ROLES: UserRole[] = [
   "FINANCE",
   "SALES",
   "CLIENT_USER",
+  "CUSTOMER",
 ];
 
 const WAREHOUSE_ROLES: UserRole[] = [
@@ -52,7 +54,7 @@ const NAV_ITEMS: NavItem[] = [
     path: "/orders",
     icon: ShoppingCart,
     label: "Orders",
-    roles: [...WAREHOUSE_ROLES, "CLIENT_USER"],
+    roles: [...WAREHOUSE_ROLES, "CLIENT_USER", "CUSTOMER"],
   },
   {
     path: "/inventory-requests",
@@ -90,6 +92,7 @@ export function DashboardLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const userName = user?.name || "User";
   const userRole = user?.role || ("" as UserRole);
@@ -129,9 +132,17 @@ export function DashboardLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex">
+    <div className="min-h-screen bg-[#0a0a0f] flex overflow-hidden">
+      {/* Mobile overlay */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-20 md:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-[#111118] border-r border-[#1e1e2e] flex flex-col fixed h-full">
+      <aside className={`w-64 bg-[#111118] border-r border-[#1e1e2e] flex flex-col fixed h-full z-30 transition-transform duration-300 ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}>
         {/* Logo & Branding */}
         <div className="p-6 border-b border-[#1e1e2e]">
           <div className="flex items-center gap-3 mb-2">
@@ -156,9 +167,10 @@ export function DashboardLayout() {
                 <Link
                   key={item.path}
                   to={item.path}
+                  onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all relative group ${active
-                      ? "bg-[#7c3aed]/10 text-[#7c3aed]"
-                      : "text-slate-400 hover:text-white hover:bg-[#1e1e2e]"
+                    ? "bg-[#7c3aed]/10 text-[#7c3aed]"
+                    : "text-slate-400 hover:text-white hover:bg-[#1e1e2e]"
                     }`}
                 >
                   {active && (
@@ -200,17 +212,25 @@ export function DashboardLayout() {
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 ml-64">
+      <div className="flex-1 md:ml-64 w-full md:w-auto h-screen overflow-y-auto">
         {/* Header */}
-        <header className="bg-[#111118]/80 backdrop-blur-lg border-b border-[#1e1e2e] sticky top-0 z-10">
-          <div className="px-8 py-4 flex items-center justify-between">
-            <div>
-              <h2 className="text-white text-lg">
-                Welcome back, {userName.split(" ")[0]}
-              </h2>
-              <p className="text-slate-400 text-sm">{currentDate}</p>
+        <header className="bg-[#111118]/80 backdrop-blur-lg border-b border-[#1e1e2e] sticky top-0 z-10 transition-colors">
+          <div className="px-4 md:px-8 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setMobileMenuOpen(true)}
+                className="p-2 -ml-2 rounded-lg bg-[#1e1e2e] hover:bg-[#2a2a3a] text-slate-400 hover:text-white transition-colors mr-2 md:hidden"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+              <div>
+                <h2 className="text-white text-lg">
+                  Welcome back, {userName.split(" ")[0]}
+                </h2>
+                <p className="text-slate-400 text-xs md:text-sm hidden sm:block">{currentDate}</p>
+              </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 md:gap-4">
               <button className="relative p-2 rounded-lg bg-[#1e1e2e] hover:bg-[#2a2a3a] text-slate-400 hover:text-white transition-colors">
                 <Bell className="w-5 h-5" />
                 <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></div>
@@ -220,7 +240,7 @@ export function DashboardLayout() {
         </header>
 
         {/* Page Content */}
-        <main className="p-8">
+        <main className="p-4 md:p-8 relative">
           <Outlet />
         </main>
       </div>
