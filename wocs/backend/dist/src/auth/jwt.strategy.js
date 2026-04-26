@@ -26,7 +26,7 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
     async validate(payload) {
         const user = await this.prisma.user.findUnique({
             where: { id: payload.sub },
-            select: { id: true, name: true, email: true, role: true, avatarUrl: true, clientId: true },
+            select: { id: true, name: true, email: true, role: true, avatarUrl: true, clientId: true, customerId: true },
         });
         if (!user)
             throw new common_1.UnauthorizedException('Invalid token user');

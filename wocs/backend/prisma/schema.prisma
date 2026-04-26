@@ -8,7 +8,7 @@ datasource db {
 
 model User {
   id        String   @id @default(uuid())
-  role      String   // IT_ADMINISTRATOR, WAREHOUSE_OPERATOR, WAREHOUSE_MANAGER, FINANCE, CLIENT_USER
+  role      String   // IT_ADMINISTRATOR, WAREHOUSE_OPERATOR, WAREHOUSE_MANAGER, FINANCE, CLIENT_USER, CUSTOMER
   name      String
   email     String   @unique
   password  String?  // Made optional for Google Auth users
@@ -18,6 +18,10 @@ model User {
   // Optional: links CLIENT_USER to their Client entity
   clientId  String?
   client    Client?  @relation(fields: [clientId], references: [id])
+
+  // Optional: links CUSTOMER to their Customer entity
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -74,6 +78,23 @@ model Client {
   inventoryRequests InventoryRequest[]
 }
 
+model Customer {
+  id           String   @id @default(uuid())
+  code         String   @unique
+  name         String
+  contactEmail String
+  phone        String?
+  address      Json?    // { line1, city, state, zip }
+  isActive     Boolean  @default(true)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  orders       Order[]
+  users        User[]
+}
+
 model SKU {
   id             String   @id @default(uuid())
   clientId       String
@@ -93,6 +114,7 @@ model SKU {
   // Relations
   inventory          InventoryPosition[]
   inventoryRequests  InventoryRequest[]
+  orderLines         OrderLine[]
 }
 
 model InventoryPosition {
@@ -124,6 +146,10 @@ model Order {
   warehouse        Warehouse @relation(fields: [warehouseId], references: [id])
   clientId         String
   client           Client   @relation(fields: [clientId], references: [id])
+
+  // The end-buyer
+  customerId       String?
+  customer         Customer? @relation(fields: [customerId], references: [id])
   
   status           String   // received, allocated, picked, packed, dispatched, delivered
   priority         String   // normal, high
@@ -140,11 +166,24 @@ model Order {
 
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+
+  // Relations
+  lines            OrderLine[]
+}
+
+model OrderLine {
+  id                   String  @id @default(uuid())
+  orderId              String
+  order                Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  skuId                String
+  sku                  SKU     @relation(fields: [skuId], references: [id])
+  quantity             Int
+  inventoryPositionId  String?
 }
 
 model InventoryMovement {
   id               String   @id @default(uuid())
-  movementType     String   // receive, pick, adjust, transfer
+  movementType     String   // receive, pick, adjust, transfer, reserve, unreserve
   referenceType    String   // Order, Adjustment, Transfer
   referenceId      String?
   

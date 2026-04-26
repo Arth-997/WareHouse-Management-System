@@ -18,6 +18,9 @@ const billing_module_1 = require("./billing/billing.module");
 const warehouses_module_1 = require("./warehouses/warehouses.module");
 const dashboard_module_1 = require("./dashboard/dashboard.module");
 const inventory_requests_module_1 = require("./inventory-requests/inventory-requests.module");
+const clients_module_1 = require("./clients/clients.module");
+const customers_module_1 = require("./customers/customers.module");
+const reports_module_1 = require("./reports/reports.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -32,6 +35,9 @@ exports.AppModule = AppModule = __decorate([
             warehouses_module_1.WarehousesModule,
             dashboard_module_1.DashboardModule,
             inventory_requests_module_1.InventoryRequestsModule,
+            clients_module_1.ClientsModule,
+            customers_module_1.CustomersModule,
+            reports_module_1.ReportsModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

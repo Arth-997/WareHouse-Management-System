@@ -43,9 +43,14 @@ export const router = createBrowserRouter([
         Component: DashboardLayout,
         children: [
           { index: true, Component: OverviewPage },
-          { path: "inventory", Component: InventoryPage },
+          {
+            element: <RoleRoute allowed={[...WAREHOUSE_ROLES, "CLIENT_USER"]} />,
+            children: [
+              { path: "inventory", Component: InventoryPage },
+              { path: "inventory-requests", Component: InventoryRequestsPage },
+            ],
+          },
           { path: "orders", Component: OrdersPage },
-          { path: "inventory-requests", Component: InventoryRequestsPage },
           {
             element: <RoleRoute allowed={["IT_ADMINISTRATOR", "FINANCE"]} />,
             children: [{ path: "billing", Component: BillingPage }],

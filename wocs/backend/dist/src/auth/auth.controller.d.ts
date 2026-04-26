@@ -12,6 +12,7 @@ export declare class AuthController {
         role: string;
         avatarUrl: string | undefined;
         clientId: string | undefined;
+        customerId: string | undefined;
     }>;
     login(loginDto: LoginAuthDto): Promise<{
         token: string;
@@ -22,6 +23,7 @@ export declare class AuthController {
             role: string;
             avatarUrl: string | undefined;
             clientId: string | undefined;
+            customerId: string | undefined;
         };
     }>;
     me(req: any): Promise<{
@@ -31,6 +33,7 @@ export declare class AuthController {
         role: string;
         avatarUrl: string | undefined;
         clientId: string | undefined;
+        customerId: string | undefined;
     }>;
     listUsers(q?: string): Promise<{
         id: string;
@@ -39,6 +42,7 @@ export declare class AuthController {
         role: string;
         avatarUrl: string | undefined;
         clientId: string | undefined;
+        customerId: string | undefined;
     }[]>;
     createManagedUser(createAuthDto: CreateAuthDto): Promise<{
         id: string;
@@ -47,6 +51,7 @@ export declare class AuthController {
         role: string;
         avatarUrl: string | undefined;
         clientId: string | undefined;
+        customerId: string | undefined;
     }>;
     updateUser(id: string, updateAuthDto: UpdateAuthDto): Promise<{
         id: string;
@@ -55,6 +60,7 @@ export declare class AuthController {
         role: string;
         avatarUrl: string | undefined;
         clientId: string | undefined;
+        customerId: string | undefined;
     }>;
     deleteUser(id: string): Promise<{
         ok: boolean;

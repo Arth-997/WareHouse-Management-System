@@ -1,5 +1,7 @@
+type StatusOption = 'success' | 'warning' | 'danger' | 'neutral' | 'pending' | 'completed' | 'in-progress' | 'cancelled' | 'dispatched';
+
 interface StatusBadgeProps {
-  status: 'success' | 'warning' | 'danger' | 'neutral' | 'pending' | 'completed' | 'in-progress' | 'cancelled';
+  status: StatusOption;
   label?: string;
 }
 
