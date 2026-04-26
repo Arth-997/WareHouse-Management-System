@@ -65,7 +65,7 @@ export declare class OrdersService {
     cancel(id: string, userId: string): Promise<{
         ok: boolean;
     }>;
-    findAll(q?: string, clientId?: string, customerId?: string): Promise<{
+    findAll(q?: string, clientId?: string, customerId?: string, status?: string): Promise<{
         id: any;
         orderRef: any;
         internalRef: any;
@@ -109,4 +109,82 @@ export declare class OrdersService {
         slaWarningLeadHours: any;
         lines: any;
     } | null>;
+    createRequest(data: {
+        warehouseId: string;
+        clientId: string;
+        customerId: string;
+        priority: string;
+        shippingMethod: string;
+        billingCategory: string;
+        deliveryAddress?: any;
+        lines: {
+            skuId: string;
+            quantity: number;
+        }[];
+    }): Promise<{
+        id: any;
+        orderRef: any;
+        internalRef: any;
+        warehouse: any;
+        warehouseId: any;
+        client: any;
+        clientId: any;
+        customer: any;
+        customerId: any;
+        status: any;
+        priority: any;
+        shippingMethod: any;
+        billingCategory: any;
+        deliveryAddress: any;
+        createdAt: any;
+        slaStartAt: any;
+        slaDeadlineAt: any;
+        slaBreached: any;
+        slaWarningLeadHours: any;
+        lines: any;
+    }>;
+    approveRequest(id: string, userId: string): Promise<{
+        id: any;
+        orderRef: any;
+        internalRef: any;
+        warehouse: any;
+        warehouseId: any;
+        client: any;
+        clientId: any;
+        customer: any;
+        customerId: any;
+        status: any;
+        priority: any;
+        shippingMethod: any;
+        billingCategory: any;
+        deliveryAddress: any;
+        createdAt: any;
+        slaStartAt: any;
+        slaDeadlineAt: any;
+        slaBreached: any;
+        slaWarningLeadHours: any;
+        lines: any;
+    }>;
+    rejectRequest(id: string): Promise<{
+        id: any;
+        orderRef: any;
+        internalRef: any;
+        warehouse: any;
+        warehouseId: any;
+        client: any;
+        clientId: any;
+        customer: any;
+        customerId: any;
+        status: any;
+        priority: any;
+        shippingMethod: any;
+        billingCategory: any;
+        deliveryAddress: any;
+        createdAt: any;
+        slaStartAt: any;
+        slaDeadlineAt: any;
+        slaBreached: any;
+        slaWarningLeadHours: any;
+        lines: any;
+    }>;
 }

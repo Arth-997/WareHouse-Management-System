@@ -2,7 +2,7 @@ import { OrdersService } from './orders.service';
 export declare class OrdersController {
     private readonly ordersService;
     constructor(ordersService: OrdersService);
-    findAll(q: string | undefined, req: any): Promise<{
+    findAll(q: string | undefined, status: string | undefined, req: any): Promise<{
         id: any;
         orderRef: any;
         internalRef: any;
@@ -25,6 +25,72 @@ export declare class OrdersController {
         lines: any;
     }[]>;
     create(body: any, req: any): Promise<{
+        id: any;
+        orderRef: any;
+        internalRef: any;
+        warehouse: any;
+        warehouseId: any;
+        client: any;
+        clientId: any;
+        customer: any;
+        customerId: any;
+        status: any;
+        priority: any;
+        shippingMethod: any;
+        billingCategory: any;
+        deliveryAddress: any;
+        createdAt: any;
+        slaStartAt: any;
+        slaDeadlineAt: any;
+        slaBreached: any;
+        slaWarningLeadHours: any;
+        lines: any;
+    }>;
+    createRequest(body: any, req: any): Promise<{
+        id: any;
+        orderRef: any;
+        internalRef: any;
+        warehouse: any;
+        warehouseId: any;
+        client: any;
+        clientId: any;
+        customer: any;
+        customerId: any;
+        status: any;
+        priority: any;
+        shippingMethod: any;
+        billingCategory: any;
+        deliveryAddress: any;
+        createdAt: any;
+        slaStartAt: any;
+        slaDeadlineAt: any;
+        slaBreached: any;
+        slaWarningLeadHours: any;
+        lines: any;
+    }>;
+    approveRequest(id: string, req: any): Promise<{
+        id: any;
+        orderRef: any;
+        internalRef: any;
+        warehouse: any;
+        warehouseId: any;
+        client: any;
+        clientId: any;
+        customer: any;
+        customerId: any;
+        status: any;
+        priority: any;
+        shippingMethod: any;
+        billingCategory: any;
+        deliveryAddress: any;
+        createdAt: any;
+        slaStartAt: any;
+        slaDeadlineAt: any;
+        slaBreached: any;
+        slaWarningLeadHours: any;
+        lines: any;
+    }>;
+    rejectRequest(id: string): Promise<{
         id: any;
         orderRef: any;
         internalRef: any;

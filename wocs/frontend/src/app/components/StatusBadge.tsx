@@ -6,7 +6,7 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, label }: StatusBadgeProps) {
-  const styles = {
+  const styles: Record<string, string> = {
     success: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
     warning: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
     danger: 'bg-red-500/10 text-red-500 border-red-500/20',
@@ -15,6 +15,7 @@ export function StatusBadge({ status, label }: StatusBadgeProps) {
     completed: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
     'in-progress': 'bg-blue-500/10 text-blue-500 border-blue-500/20',
     cancelled: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
+    dispatched: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
   };
 
   const displayLabel = label || status.replace('-', ' ').toUpperCase();

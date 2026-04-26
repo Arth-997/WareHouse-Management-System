@@ -233,7 +233,7 @@ let OrdersService = class OrdersService {
         await this.prisma.order.delete({ where: { id } });
         return { ok: true };
     }
-    async findAll(q, clientId, customerId) {
+    async findAll(q, clientId, customerId, status) {
         const query = q?.trim();
         const whereConditions = [];
         if (query) {
@@ -252,6 +252,8 @@ let OrdersService = class OrdersService {
             whereConditions.push({ clientId });
         if (customerId)
             whereConditions.push({ customerId });
+        if (status)
+            whereConditions.push({ status });
         const orders = await this.prisma.order.findMany({
             where: whereConditions.length > 0 ? { AND: whereConditions } : undefined,
             include: this.orderInclude,
@@ -267,6 +269,120 @@ let OrdersService = class OrdersService {
         if (!order)
             return null;
         return this.mapOrder(order);
+    }
+    async createRequest(data) {
+        if (!data.warehouseId || !data.clientId || !data.customerId) {
+            throw new common_1.BadRequestException('warehouseId, clientId, and customerId are required');
+        }
+        if (!data.lines?.length) {
+            throw new common_1.BadRequestException('At least one line item is required');
+        }
+        for (const line of data.lines) {
+            if (line.quantity <= 0)
+                throw new common_1.BadRequestException('Quantity must be > 0');
+        }
+        const orderRef = await this.generateOrderRef();
+        const order = await this.prisma.order.create({
+            data: {
+                orderRef,
+                warehouseId: data.warehouseId,
+                clientId: data.clientId,
+                customerId: data.customerId,
+                status: 'requested',
+                priority: data.priority || 'normal',
+                shippingMethod: data.shippingMethod || 'standard',
+                billingCategory: data.billingCategory || 'storage_handling',
+                deliveryAddress: data.deliveryAddress || {},
+                lines: {
+                    create: data.lines.map((l) => ({
+                        skuId: l.skuId,
+                        quantity: l.quantity,
+                    })),
+                },
+            },
+            include: this.orderInclude,
+        });
+        return this.mapOrder(order);
+    }
+    async approveRequest(id, userId) {
+        const order = await this.prisma.order.findUnique({
+            where: { id },
+            include: this.orderInclude,
+        });
+        if (!order)
+            throw new common_1.NotFoundException('Order request not found');
+        if (order.status !== 'requested') {
+            throw new common_1.BadRequestException('Only orders with status "requested" can be approved');
+        }
+        const reservations = [];
+        for (const line of order.lines) {
+            const position = await this.prisma.inventoryPosition.findFirst({
+                where: {
+                    warehouseId: order.warehouseId,
+                    clientId: order.clientId,
+                    skuId: line.skuId,
+                },
+            });
+            if (!position) {
+                const sku = line.sku?.skuCode ?? line.skuId;
+                throw new common_1.BadRequestException(`No inventory found for SKU ${sku} in warehouse ${order.warehouse.code}`);
+            }
+            const available = position.quantityOnHand - position.quantityReserved;
+            if (available < line.quantity) {
+                const sku = line.sku?.skuCode ?? line.skuId;
+                throw new common_1.BadRequestException(`Insufficient stock for SKU ${sku}. Available: ${available}, Requested: ${line.quantity}`);
+            }
+            reservations.push({ positionId: position.id, quantity: line.quantity, lineId: line.id });
+        }
+        for (const res of reservations) {
+            const pos = await this.prisma.inventoryPosition.findUnique({ where: { id: res.positionId } });
+            await this.prisma.inventoryPosition.update({
+                where: { id: res.positionId },
+                data: { quantityReserved: { increment: res.quantity } },
+            });
+            await this.prisma.orderLine.update({
+                where: { id: res.lineId },
+                data: { inventoryPositionId: res.positionId },
+            });
+            await this.prisma.inventoryMovement.create({
+                data: {
+                    movementType: 'reserve',
+                    referenceType: 'Order',
+                    referenceId: order.orderRef,
+                    quantityBefore: pos.quantityReserved,
+                    quantityChange: res.quantity,
+                    quantityAfter: pos.quantityReserved + res.quantity,
+                    performedById: userId,
+                    reasonCategory: 'order_reservation',
+                },
+            });
+        }
+        const now = new Date();
+        const slaDeadline = new Date(now.getTime() + 24 * 3600_000);
+        const updated = await this.prisma.order.update({
+            where: { id },
+            data: {
+                status: 'received',
+                slaStartAt: now,
+                slaDeadlineAt: slaDeadline,
+            },
+            include: this.orderInclude,
+        });
+        return this.mapOrder(updated);
+    }
+    async rejectRequest(id) {
+        const order = await this.prisma.order.findUnique({ where: { id } });
+        if (!order)
+            throw new common_1.NotFoundException('Order request not found');
+        if (order.status !== 'requested') {
+            throw new common_1.BadRequestException('Only orders with status "requested" can be rejected');
+        }
+        const updated = await this.prisma.order.update({
+            where: { id },
+            data: { status: 'rejected' },
+            include: this.orderInclude,
+        });
+        return this.mapOrder(updated);
     }
 };
 exports.OrdersService = OrdersService;
