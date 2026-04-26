@@ -72,6 +72,33 @@ The soul of WOCS is its inventory safety.
 
 ---
 
+## 🏗️ Architecture Diagrams
+
+The following diagrams illustrate the core architecture and design of the WOCS platform:
+
+### High-Level System Architecture
+![High-Level System Architecture](./images/high%20level%20system%20architecture.png)
+
+### Backend Design
+![Backend Design](./images/backend%20design.png)
+
+### REST API Architecture
+![REST API Architecture](./images/rest%20api%20architecture.png)
+
+### Database Schema
+![Database Schema](./images/database%20schema.png)
+
+### Frontend Architecture
+![Frontend Architecture](./images/frontend%20architecture.png)
+
+### Security Architecture
+![Security Architecture](./images/security%20architecture.png)
+
+### Business Logic Patterns
+![Business Logic Patterns](./images/business%20logic%20patterns.png)
+
+---
+
 ## 📂 Core Architecture & Deep Dive into Main Files
 
 WOCS keeps business logic strictly in the backend services and uses the frontend primarily for presentation and state handling.
@@ -123,6 +150,59 @@ Here are some visual glimpses of the application's core capabilities from our va
 ![Finance / Analytics 2](./images/Screenshot%20from%202026-04-26%2020-44-03.png)
 ![Orders View](./images/Screenshot%20from%202026-04-26%2020-44-14.png)
 ![WOCS App](./images/image.png)
+
+---
+
+## 🧪 Testing & Coverage
+
+WOCS includes a comprehensive unit test suite covering all core backend services. Tests use **Jest** with **ts-jest** and mock Prisma services for full isolation.
+
+### Test Results
+
+| Metric | Result |
+|--------|--------|
+| **Test Suites** | 7 passed, 7 total |
+| **Tests** | 107 passed, 107 total |
+| **Execution Time** | ~2.5 seconds |
+| **Status** | ✅ All Passing |
+
+### Coverage Report
+
+| Service | Statements | Branches | Functions | Lines |
+|---------|-----------|----------|-----------|-------|
+| `orders.service.ts` | 97.10% | 76.47% | 100% | 96.77% |
+| `inventory.service.ts` | 100% | 90% | 100% | 100% |
+| `auth.service.ts` | 91.37% | 87.75% | 80% | 95.55% |
+| `inventory-requests.service.ts` | 95.23% | 92.50% | 100% | 100% |
+| `dashboard.service.ts` | 96.77% | 75% | 100% | 100% |
+| `billing.service.ts` | 100% | 90% | 100% | 100% |
+| `reports.service.ts` | 100% | 86.66% | 100% | 100% |
+| **Overall** | **85.94%** | **77.50%** | **73.75%** | **88.31%** |
+
+### What is Tested
+
+- **Order Lifecycle (FSM):** Creation, approval, rejection, status transitions (received → allocated → picked → packed → dispatched → delivered), cancellation with inventory release
+- **Inventory Reservation:** Stock validation, atomic reservation on order creation/approval, deduction on dispatch, unreservation on cancel
+- **Authentication:** JWT generation with role-specific payloads (clientId/customerId), bcrypt password hashing, credential validation
+- **Inventory Requests:** Full restock lifecycle — create, approve, reject, confirm receipt with stock increment
+- **Role-Based Data Scoping:** CLIENT_USER filtered by clientId, CUSTOMER filtered by customerId, cross-client access prevention (ForbiddenException)
+- **Analytics Engine:** Fulfillment rate, SLA breach rate, average fulfillment time, top-moving SKUs, warehouse utilization
+- **Dashboard KPIs:** Unique SKU count, active orders, SLA breach/warning detection
+
+### Running Tests
+
+```bash
+cd backend
+
+# Run all tests
+npx jest --config jest.config.js --forceExit
+
+# Run with coverage
+npx jest --config jest.config.js --forceExit --coverage
+
+# Run a single suite
+npx jest --config jest.config.js test/orders.service.spec.ts --forceExit
+```
 
 ---
 

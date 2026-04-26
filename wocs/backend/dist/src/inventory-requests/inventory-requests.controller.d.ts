@@ -3,11 +3,11 @@ export declare class InventoryRequestsController {
     private readonly service;
     constructor(service: InventoryRequestsService);
     create(body: any, req: any): Promise<{
-        client: {
+        warehouse: {
             name: string;
             code: string;
         };
-        warehouse: {
+        client: {
             name: string;
             code: string;
         };
@@ -20,25 +20,25 @@ export declare class InventoryRequestsController {
         };
     } & {
         id: string;
-        clientId: string;
         createdAt: Date;
         updatedAt: Date;
+        clientId: string;
         warehouseId: string;
         skuId: string;
         status: string;
-        respondedAt: Date | null;
-        receivedAt: Date | null;
         requestedQty: number;
         notes: string | null;
+        respondedAt: Date | null;
+        receivedAt: Date | null;
         requestedById: string;
         respondedById: string | null;
     }>;
     findAll(req: any): Promise<({
-        client: {
+        warehouse: {
             name: string;
             code: string;
         };
-        warehouse: {
+        client: {
             name: string;
             code: string;
         };
@@ -54,25 +54,25 @@ export declare class InventoryRequestsController {
         } | null;
     } & {
         id: string;
-        clientId: string;
         createdAt: Date;
         updatedAt: Date;
+        clientId: string;
         warehouseId: string;
         skuId: string;
         status: string;
-        respondedAt: Date | null;
-        receivedAt: Date | null;
         requestedQty: number;
         notes: string | null;
+        respondedAt: Date | null;
+        receivedAt: Date | null;
         requestedById: string;
         respondedById: string | null;
     })[]>;
     approve(id: string, req: any): Promise<{
-        client: {
+        warehouse: {
             name: string;
             code: string;
         };
-        warehouse: {
+        client: {
             name: string;
             code: string;
         };
@@ -82,25 +82,25 @@ export declare class InventoryRequestsController {
         };
     } & {
         id: string;
-        clientId: string;
         createdAt: Date;
         updatedAt: Date;
+        clientId: string;
         warehouseId: string;
         skuId: string;
         status: string;
-        respondedAt: Date | null;
-        receivedAt: Date | null;
         requestedQty: number;
         notes: string | null;
+        respondedAt: Date | null;
+        receivedAt: Date | null;
         requestedById: string;
         respondedById: string | null;
     }>;
     reject(id: string, req: any): Promise<{
-        client: {
+        warehouse: {
             name: string;
             code: string;
         };
-        warehouse: {
+        client: {
             name: string;
             code: string;
         };
@@ -110,25 +110,25 @@ export declare class InventoryRequestsController {
         };
     } & {
         id: string;
-        clientId: string;
         createdAt: Date;
         updatedAt: Date;
+        clientId: string;
         warehouseId: string;
         skuId: string;
         status: string;
-        respondedAt: Date | null;
-        receivedAt: Date | null;
         requestedQty: number;
         notes: string | null;
+        respondedAt: Date | null;
+        receivedAt: Date | null;
         requestedById: string;
         respondedById: string | null;
     }>;
     confirmReceived(id: string, req: any): Promise<{
-        client: {
+        warehouse: {
             name: string;
             code: string;
         };
-        warehouse: {
+        client: {
             name: string;
             code: string;
         };
@@ -138,16 +138,16 @@ export declare class InventoryRequestsController {
         };
     } & {
         id: string;
-        clientId: string;
         createdAt: Date;
         updatedAt: Date;
+        clientId: string;
         warehouseId: string;
         skuId: string;
         status: string;
-        respondedAt: Date | null;
-        receivedAt: Date | null;
         requestedQty: number;
         notes: string | null;
+        respondedAt: Date | null;
+        receivedAt: Date | null;
         requestedById: string;
         respondedById: string | null;
     }>;
