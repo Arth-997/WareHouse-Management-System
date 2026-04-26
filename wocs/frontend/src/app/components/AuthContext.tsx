@@ -18,6 +18,7 @@ export interface AuthUser {
     role: UserRole
     avatarUrl?: string
     clientId?: string
+    customerId?: string
 }
 
 interface AuthContextType {

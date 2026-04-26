@@ -21,13 +21,23 @@ let OrdersController = class OrdersController {
     constructor(ordersService) {
         this.ordersService = ordersService;
     }
-    findAll(q, req) {
+    findAll(q, status, req) {
         const clientId = req.user?.role === 'CLIENT_USER' ? req.user.clientId : undefined;
         const customerId = req.user?.role === 'CUSTOMER' ? req.user.customerId : undefined;
-        return this.ordersService.findAll(q, clientId, customerId);
+        return this.ordersService.findAll(q, clientId, customerId, status);
     }
     create(body, req) {
         return this.ordersService.create(body, req.user.id);
+    }
+    createRequest(body, req) {
+        const customerId = req.user?.customerId || body.customerId;
+        return this.ordersService.createRequest({ ...body, customerId });
+    }
+    approveRequest(id, req) {
+        return this.ordersService.approveRequest(id, req.user.id);
+    }
+    rejectRequest(id) {
+        return this.ordersService.rejectRequest(id);
     }
     updateStatus(id, status, req) {
         return this.ordersService.updateStatus(id, status, req.user.id);
@@ -44,9 +54,10 @@ __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Get)(),
     __param(0, (0, common_1.Query)('q')),
-    __param(1, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)('status')),
+    __param(2, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [Object, Object, Object]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "findAll", null);
 __decorate([
@@ -58,6 +69,32 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "create", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Post)('request'),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "createRequest", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Patch)(':id/approve'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "approveRequest", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Patch)(':id/reject'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "rejectRequest", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Patch)(':id/status'),
