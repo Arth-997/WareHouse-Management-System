@@ -10,11 +10,11 @@ export declare class InventoryRequestsService {
         notes?: string;
         requestedById: string;
     }): Promise<{
-        warehouse: {
+        client: {
             name: string;
             code: string;
         };
-        client: {
+        warehouse: {
             name: string;
             code: string;
         };
@@ -27,16 +27,16 @@ export declare class InventoryRequestsService {
         };
     } & {
         id: string;
+        clientId: string;
         createdAt: Date;
         updatedAt: Date;
-        clientId: string;
         warehouseId: string;
         skuId: string;
         status: string;
-        requestedQty: number;
-        notes: string | null;
         respondedAt: Date | null;
         receivedAt: Date | null;
+        requestedQty: number;
+        notes: string | null;
         requestedById: string;
         respondedById: string | null;
     }>;
@@ -45,11 +45,11 @@ export declare class InventoryRequestsService {
         clientId?: string;
         id: string;
     }): Promise<({
-        warehouse: {
+        client: {
             name: string;
             code: string;
         };
-        client: {
+        warehouse: {
             name: string;
             code: string;
         };
@@ -65,16 +65,16 @@ export declare class InventoryRequestsService {
         } | null;
     } & {
         id: string;
+        clientId: string;
         createdAt: Date;
         updatedAt: Date;
-        clientId: string;
         warehouseId: string;
         skuId: string;
         status: string;
-        requestedQty: number;
-        notes: string | null;
         respondedAt: Date | null;
         receivedAt: Date | null;
+        requestedQty: number;
+        notes: string | null;
         requestedById: string;
         respondedById: string | null;
     })[]>;
@@ -83,11 +83,11 @@ export declare class InventoryRequestsService {
         clientId?: string;
         role: string;
     }): Promise<{
-        warehouse: {
+        client: {
             name: string;
             code: string;
         };
-        client: {
+        warehouse: {
             name: string;
             code: string;
         };
@@ -97,16 +97,16 @@ export declare class InventoryRequestsService {
         };
     } & {
         id: string;
+        clientId: string;
         createdAt: Date;
         updatedAt: Date;
-        clientId: string;
         warehouseId: string;
         skuId: string;
         status: string;
-        requestedQty: number;
-        notes: string | null;
         respondedAt: Date | null;
         receivedAt: Date | null;
+        requestedQty: number;
+        notes: string | null;
         requestedById: string;
         respondedById: string | null;
     }>;
@@ -115,11 +115,11 @@ export declare class InventoryRequestsService {
         clientId?: string;
         role: string;
     }): Promise<{
-        warehouse: {
+        client: {
             name: string;
             code: string;
         };
-        client: {
+        warehouse: {
             name: string;
             code: string;
         };
@@ -129,16 +129,16 @@ export declare class InventoryRequestsService {
         };
     } & {
         id: string;
+        clientId: string;
         createdAt: Date;
         updatedAt: Date;
-        clientId: string;
         warehouseId: string;
         skuId: string;
         status: string;
-        requestedQty: number;
-        notes: string | null;
         respondedAt: Date | null;
         receivedAt: Date | null;
+        requestedQty: number;
+        notes: string | null;
         requestedById: string;
         respondedById: string | null;
     }>;
@@ -146,11 +146,11 @@ export declare class InventoryRequestsService {
         id: string;
         role: string;
     }): Promise<{
-        warehouse: {
+        client: {
             name: string;
             code: string;
         };
-        client: {
+        warehouse: {
             name: string;
             code: string;
         };
@@ -160,16 +160,16 @@ export declare class InventoryRequestsService {
         };
     } & {
         id: string;
+        clientId: string;
         createdAt: Date;
         updatedAt: Date;
-        clientId: string;
         warehouseId: string;
         skuId: string;
         status: string;
-        requestedQty: number;
-        notes: string | null;
         respondedAt: Date | null;
         receivedAt: Date | null;
+        requestedQty: number;
+        notes: string | null;
         requestedById: string;
         respondedById: string | null;
     }>;

@@ -206,43 +206,62 @@ npx jest --config jest.config.js test/orders.service.spec.ts --forceExit
 
 ---
 
-## 🚀 Getting Started (Run Locally)
+## 🚀 Getting Started
+
+You are not restricted to running this exclusively in Docker or exclusively locally. The system is designed to allow seamless switching between them.
 
 ### Prerequisites
-*   Node.js (v18+)
-*   Docker & Docker Compose
+*   Docker & Docker Compose (required for Database & Redis)
+*   Node.js (v18+) (if running locally)
 
-### 1. Start Infrastructure
-The project relies on Docker to host the isolated PostgreSQL database and Redis cache. You do not need to install Postgres locally.
+### Option A: Full Docker (Recommended)
+This builds and starts all 4 containers (Database, Redis, Backend, Frontend).
 ```bash
 cd "/home/arth/SOFTWARE STUFF/wocs"
-docker compose up -d
-```
+# Build and run all services in the background
+docker compose up --build -d
 
-### 2. Setup Backend server (NestJS)
+# First time only: Seed the database with fake data
+docker compose exec backend npx prisma db seed
+```
+- Frontend: `http://localhost:5173`
+- Backend API: `http://localhost:3000/api/v1`
+
+### Option B: Infra in Docker, Code Locally
+Ideal if you want to use hot-reloading for development.
 ```bash
+cd "/home/arth/SOFTWARE STUFF/wocs"
+# Start only the database and cache
+docker compose up db redis -d
+
+# Terminal 1: Start Backend
 cd backend
 npm install
-# Push the Prisma schema structure to the new Docker DB
 npx prisma db push
-# Seed the database with fake clients, warehouses, and users
 npx prisma db seed
-# Start the API server
 npm run start:dev
-```
 
-### 3. Setup Frontend server (Vite/React)
-Open a new terminal window:
-```bash
+# Terminal 2: Start Frontend
 cd frontend
 npm install
-# Start the web app
 npm run dev
 ```
 
-### 4. Application Logins
-The application is available at `http://localhost:5173`. Based on the default database seeder, try these test accounts to see the different role dashboards:
+### Option C: Mix and Match
+You can run the backend in Docker and the frontend locally, since they expose the same ports (3000 and 5173).
+```bash
+cd "/home/arth/SOFTWARE STUFF/wocs"
+docker compose up db redis backend -d
+
+# Terminal: Start Frontend locally for rapid UI dev
+cd frontend
+npm run dev
+```
+
+### Application Logins
+Based on the default database seeder, try these test accounts to see the different role dashboards. All passwords are the same.
 *   **Admin:** `admin@wocs.com` / `admin123`
-*   **Finance:** `finance@wocs.com` / `finance123`
+*   **Finance:** `finance@wocs.com` / `admin123` (Note: seeded mostly with admin password)
 *   **Client (Supplier):** `client1@techbrand.com` / `client123`
 *   **Customer (Buyer):** `customer@ravielec.in` / `customer123`
+
