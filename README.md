@@ -114,15 +114,15 @@ WOCS keeps business logic strictly in the backend services and uses the frontend
 
 Here are some visual glimpses of the application's core capabilities from our various role-based dashboards:
 
-![Finance Dashboard](file:///home/arth/SOFTWARE%20STUFF/images/Screenshot%20from%202026-04-26%2018-26-29.png)
-![Dashboard Overview 1](file:///home/arth/SOFTWARE%20STUFF/images/Screenshot%20from%202026-04-26%2020-43-21.png)
-![Dashboard Overview 2](file:///home/arth/SOFTWARE%20STUFF/images/Screenshot%20from%202026-04-26%2020-43-34.png)
-![Form / Data View 1](file:///home/arth/SOFTWARE%20STUFF/images/Screenshot%20from%202026-04-26%2020-43-47.png)
-![Form / Data View 2](file:///home/arth/SOFTWARE%20STUFF/images/Screenshot%20from%202026-04-26%2020-43-51.png)
-![Finance / Analytics 1](file:///home/arth/SOFTWARE%20STUFF/images/Screenshot%20from%202026-04-26%2020-43-58.png)
-![Finance / Analytics 2](file:///home/arth/SOFTWARE%20STUFF/images/Screenshot%20from%202026-04-26%2020-44-03.png)
-![Orders View](file:///home/arth/SOFTWARE%20STUFF/images/Screenshot%20from%202026-04-26%2020-44-14.png)
-![WOCS App](file:///home/arth/SOFTWARE%20STUFF/images/image.png)
+![Finance Dashboard](./images/Screenshot%20from%202026-04-26%2018-26-29.png)
+![Dashboard Overview 1](./images/Screenshot%20from%202026-04-26%2020-43-21.png)
+![Dashboard Overview 2](./images/Screenshot%20from%202026-04-26%2020-43-34.png)
+![Form / Data View 1](./images/Screenshot%20from%202026-04-26%2020-43-47.png)
+![Form / Data View 2](./images/Screenshot%20from%202026-04-26%2020-43-51.png)
+![Finance / Analytics 1](./images/Screenshot%20from%202026-04-26%2020-43-58.png)
+![Finance / Analytics 2](./images/Screenshot%20from%202026-04-26%2020-44-03.png)
+![Orders View](./images/Screenshot%20from%202026-04-26%2020-44-14.png)
+![WOCS App](./images/image.png)
 
 ---
 
